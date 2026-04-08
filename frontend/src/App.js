@@ -11,6 +11,49 @@ import axios from "axios";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// VideoCard Component
+const VideoCard = ({ video }) => {
+  return (
+    <div 
+      className="border border-gray-200 rounded-lg overflow-hidden hover:border-black transition-all duration-200 bg-white"
+      data-testid="video-card"
+    >
+      <div className="flex gap-3 p-3">
+        {/* Thumbnail */}
+        <div className="flex-shrink-0">
+          <img 
+            src={video.thumbnail} 
+            alt={video.title}
+            className="w-32 h-20 object-cover rounded bg-gray-100"
+            onError={(e) => {
+              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="80" viewBox="0 0 128 80"%3E%3Crect fill="%23f3f4f6" width="128" height="80"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%239ca3af"%3EVideo%3C/text%3E%3C/svg%3E';
+            }}
+          />
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-sm text-black mb-1 line-clamp-2">
+            {video.title}
+          </h4>
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+            {video.description}
+          </p>
+          <a
+            href={video.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-xs font-medium text-black hover:underline"
+            data-testid="watch-video-button"
+          >
+            Watch →
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -71,6 +114,7 @@ const LandingPage = () => {
       const botMessage = {
         role: 'bot',
         text: response.data.response,
+        videos: response.data.videos || [],
         timestamp: new Date()
       };
 
@@ -387,20 +431,33 @@ const LandingPage = () => {
           {/* Chat Messages Area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4" data-testid="chat-messages" style={{ minHeight: '400px', maxHeight: '450px' }}>
             {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                data-testid={`message-${msg.role}`}
-              >
+              <div key={index}>
+                {/* Message Bubble */}
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                    msg.role === 'user'
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  data-testid={`message-${msg.role}`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                      msg.role === 'user'
+                        ? 'bg-black text-white'
+                        : 'bg-gray-100 text-gray-900'
+                    }`}
+                  >
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                  </div>
                 </div>
+                
+                {/* Video Cards - Show only for bot messages with videos */}
+                {msg.role === 'bot' && msg.videos && msg.videos.length > 0 && (
+                  <div className="flex justify-start mt-3">
+                    <div className="max-w-[80%] space-y-2">
+                      {msg.videos.map((video, videoIndex) => (
+                        <VideoCard key={videoIndex} video={video} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             

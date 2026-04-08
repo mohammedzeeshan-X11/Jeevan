@@ -44,9 +44,17 @@ class ChatRequest(BaseModel):
     language: str = "English"  # English, Hindi, Kannada
     session_id: Optional[str] = None
 
+class VideoRecommendation(BaseModel):
+    video_id: str
+    title: str
+    description: str
+    thumbnail: str
+    url: str
+
 class ChatResponse(BaseModel):
     response: str
     session_id: str
+    videos: List[VideoRecommendation] = []
 
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
@@ -76,6 +84,146 @@ async def get_status_checks():
             check['timestamp'] = datetime.fromisoformat(check['timestamp'])
     
     return status_checks
+
+# Video Recommendation Database (Mock data - replace with real YouTube videos)
+VIDEO_DATABASE = {
+    "menstrual_health": [
+        {
+            "video_id": "menstrual_1",
+            "title": "Understanding Your Menstrual Cycle",
+            "description": "Learn about the phases of your menstrual cycle and what's normal.",
+            "thumbnail": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=example1"
+        },
+        {
+            "video_id": "menstrual_2",
+            "title": "Managing Period Pain Naturally",
+            "description": "Natural remedies and tips for reducing menstrual cramps and discomfort.",
+            "thumbnail": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=example2"
+        }
+    ],
+    "pcos": [
+        {
+            "video_id": "pcos_1",
+            "title": "PCOS Explained: Symptoms and Management",
+            "description": "Understanding PCOS and how to manage symptoms through lifestyle changes.",
+            "thumbnail": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=pcos1"
+        },
+        {
+            "video_id": "pcos_2",
+            "title": "PCOS Diet and Nutrition Guide",
+            "description": "Dietary recommendations for managing PCOS and improving hormonal balance.",
+            "thumbnail": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=pcos2"
+        }
+    ],
+    "nutrition": [
+        {
+            "video_id": "nutrition_1",
+            "title": "Balanced Diet for Women's Health",
+            "description": "Essential nutrients and meal planning tips for optimal women's health.",
+            "thumbnail": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=nutrition1"
+        },
+        {
+            "video_id": "nutrition_2",
+            "title": "Iron-Rich Foods for Women",
+            "description": "Preventing anemia with iron-rich foods and proper nutrition.",
+            "thumbnail": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=nutrition2"
+        }
+    ],
+    "mental_health": [
+        {
+            "video_id": "mental_1",
+            "title": "Stress Management Techniques",
+            "description": "Effective strategies for managing stress and improving mental well-being.",
+            "thumbnail": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=mental1"
+        },
+        {
+            "video_id": "mental_2",
+            "title": "Mindfulness and Meditation for Beginners",
+            "description": "Simple mindfulness practices to reduce anxiety and improve mental health.",
+            "thumbnail": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=mental2"
+        }
+    ],
+    "exercise": [
+        {
+            "video_id": "exercise_1",
+            "title": "Yoga for Women's Health",
+            "description": "Gentle yoga poses specifically beneficial for women's wellness.",
+            "thumbnail": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=exercise1"
+        },
+        {
+            "video_id": "exercise_2",
+            "title": "Home Workout Routine for Beginners",
+            "description": "Simple exercises you can do at home to stay fit and healthy.",
+            "thumbnail": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=exercise2"
+        }
+    ],
+    "pregnancy": [
+        {
+            "video_id": "pregnancy_1",
+            "title": "Prenatal Care Essentials",
+            "description": "Important prenatal health tips and what to expect during pregnancy.",
+            "thumbnail": "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=pregnancy1"
+        },
+        {
+            "video_id": "pregnancy_2",
+            "title": "Nutrition During Pregnancy",
+            "description": "Essential nutrients and healthy eating during pregnancy.",
+            "thumbnail": "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=pregnancy2"
+        }
+    ],
+    "general_wellness": [
+        {
+            "video_id": "wellness_1",
+            "title": "Daily Wellness Habits for Women",
+            "description": "Simple daily habits to improve overall health and well-being.",
+            "thumbnail": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=wellness1"
+        },
+        {
+            "video_id": "wellness_2",
+            "title": "Self-Care Routine Guide",
+            "description": "Creating a sustainable self-care routine for better health.",
+            "thumbnail": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=wellness2"
+        }
+    ]
+}
+
+def detect_intent_and_get_videos(message: str) -> List[VideoRecommendation]:
+    """Detect user intent from message and return relevant video recommendations"""
+    message_lower = message.lower()
+    
+    # Check for specific health topics
+    if any(word in message_lower for word in ['period', 'menstrual', 'menstruation', 'cycle', 'cramp', 'pms']):
+        videos_data = VIDEO_DATABASE.get("menstrual_health", [])
+    elif any(word in message_lower for word in ['pcos', 'polycystic', 'ovary', 'ovarian']):
+        videos_data = VIDEO_DATABASE.get("pcos", [])
+    elif any(word in message_lower for word in ['pregnant', 'pregnancy', 'prenatal', 'baby', 'expecting']):
+        videos_data = VIDEO_DATABASE.get("pregnancy", [])
+    elif any(word in message_lower for word in ['stress', 'anxiety', 'mental', 'depression', 'worried', 'overwhelmed']):
+        videos_data = VIDEO_DATABASE.get("mental_health", [])
+    elif any(word in message_lower for word in ['nutrition', 'diet', 'food', 'eat', 'meal', 'vitamin']):
+        videos_data = VIDEO_DATABASE.get("nutrition", [])
+    elif any(word in message_lower for word in ['exercise', 'workout', 'fitness', 'yoga', 'physical', 'active']):
+        videos_data = VIDEO_DATABASE.get("exercise", [])
+    else:
+        # Default to general wellness
+        videos_data = VIDEO_DATABASE.get("general_wellness", [])
+    
+    # Convert to VideoRecommendation objects (limit to 2-3 videos)
+    return [VideoRecommendation(**video) for video in videos_data[:2]]
 
 # Chat endpoint for Jeevan AI chatbot
 @api_router.post("/chat", response_model=ChatResponse)
@@ -143,9 +291,13 @@ async def chat_with_jeevan(request: ChatRequest):
         # Get mock response
         bot_response = get_mock_response(request.message, request.language)
         
+        # Get relevant video recommendations based on user message intent
+        video_recommendations = detect_intent_and_get_videos(request.message)
+        
         return ChatResponse(
             response=bot_response,
-            session_id=session_id
+            session_id=session_id,
+            videos=video_recommendations
         )
         
     except Exception as e:
