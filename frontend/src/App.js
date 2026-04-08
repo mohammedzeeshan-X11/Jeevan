@@ -1,13 +1,104 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MessageCircle, Brain, BookOpen, Users, Shield, CheckCircle, CreditCard, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MessageCircle, Brain, BookOpen, Users, Shield, CheckCircle, CreditCard, X, Send, Loader2 } from "lucide-react";
+import axios from "axios";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [language, setLanguage] = useState("English");
+  const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
+  const messagesEndRef = useRef(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Initialize chat with welcome message
+  useEffect(() => {
+    if (chatOpen && messages.length === 0) {
+      const welcomeMessages = {
+        "English": "Hello! I'm Jeevan, your AI health companion. How can I help you today?",
+        "Hindi": "नमस्ते! मैं जीवन हूं, आपका AI स्वास्थ्य साथी। आज मैं आपकी कैसे मदद कर सकता हूं?",
+        "Kannada": "ನಮಸ್ಕಾರ! ನಾನು ಜೀವನ್, ನಿಮ್ಮ AI ಆರೋಗ್ಯ ಸಹಚರ. ಇಂದು ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?"
+      };
+      setMessages([{
+        role: 'bot',
+        text: welcomeMessages[language],
+        timestamp: new Date()
+      }]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatOpen, language]);
+
+  const sendMessage = async () => {
+    if (!inputMessage.trim() || isLoading) return;
+
+    const userMessage = {
+      role: 'user',
+      text: inputMessage,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage("");
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post(`${API}/chat`, {
+        message: inputMessage,
+        language: language,
+        session_id: sessionId
+      });
+
+      setSessionId(response.data.session_id);
+
+      const botMessage = {
+        role: 'bot',
+        text: response.data.response,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      const errorMessage = {
+        role: 'bot',
+        text: "I'm having trouble connecting right now. Please try again.",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const resetChat = () => {
+    setMessages([]);
+    setSessionId(null);
+  };
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
@@ -254,9 +345,12 @@ const LandingPage = () => {
       </button>
 
       {/* Chatbot Modal */}
-      <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-white" data-testid="chatbot-modal">
-          <DialogHeader>
+      <Dialog open={chatOpen} onOpenChange={(open) => {
+        setChatOpen(open);
+        if (!open) resetChat();
+      }}>
+        <DialogContent className="sm:max-w-[550px] max-h-[700px] bg-white flex flex-col p-0" data-testid="chatbot-modal">
+          <DialogHeader className="p-6 pb-4 border-b border-gray-200">
             <DialogTitle className="text-2xl font-bold flex items-center justify-between">
               <span>Chat with Jeevan</span>
               <button 
@@ -267,23 +361,92 @@ const LandingPage = () => {
                 <X className="h-5 w-5" />
               </button>
             </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {/* Chatbot UI Placeholder */}
-            <div className="border-2 border-gray-200 rounded-lg p-6 min-h-[400px] flex flex-col items-center justify-center text-center space-y-4" data-testid="chat-interface">
-              <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center">
-                <MessageCircle className="h-8 w-8" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold">Welcome to Jeevan!</h3>
-                <p className="text-gray-600">
-                  Your AI health assistant is ready to help you in English, Hindi, or Kannada.
-                </p>
-              </div>
-              <p className="text-sm text-gray-500">
-                (Chatbot interface will be implemented here)
-              </p>
+            
+            {/* Language Toggle */}
+            <div className="flex gap-2 mt-4">
+              {["English", "Hindi", "Kannada"].map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => {
+                    setLanguage(lang);
+                    resetChat();
+                  }}
+                  className={`px-3 py-1 text-sm rounded-full transition-all ${
+                    language === lang
+                      ? "bg-black text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                  data-testid={`language-${lang.toLowerCase()}`}
+                >
+                  {lang}
+                </button>
+              ))}
             </div>
+          </DialogHeader>
+          
+          {/* Chat Messages Area */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4" data-testid="chat-messages" style={{ minHeight: '400px', maxHeight: '450px' }}>
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                data-testid={`message-${msg.role}`}
+              >
+                <div
+                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                    msg.role === 'user'
+                      ? 'bg-black text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                </div>
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                  <Loader2 className="h-5 w-5 animate-spin text-gray-600" />
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="p-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex gap-2">
+              <Input
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={
+                  language === "English" ? "Type your message..." :
+                  language === "Hindi" ? "अपना संदेश लिखें..." :
+                  "ನಿಮ್ಮ ಸಂದೇಶವನ್ನು ಟೈಪ್ ಮಾಡಿ..."
+                }
+                className="flex-1 border-gray-300 focus:border-black focus:ring-black"
+                disabled={isLoading}
+                data-testid="chat-input"
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={!inputMessage.trim() || isLoading}
+                className="bg-black text-white hover:bg-gray-800 disabled:bg-gray-300"
+                data-testid="send-button"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">
+              Jeevan provides general health guidance. Always consult a healthcare provider for medical advice.
+            </p>
           </div>
         </DialogContent>
       </Dialog>
