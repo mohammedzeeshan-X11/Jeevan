@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Brain, BookOpen, Users, Shield, CheckCircle, CreditCard, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, Brain, BookOpen, Users, Shield, CheckCircle, CreditCard, X, Send, Loader2, AlertTriangle, ChevronRight, ArrowLeft } from "lucide-react";
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -52,6 +52,110 @@ const VideoCard = ({ video }) => {
       </div>
     </div>
   );
+};
+
+// Education Content Database
+const EDUCATION_CONTENT = {
+  periods: {
+    title: { en: "Menstrual Health", hi: "मासिक धर्म स्वास्थ्य", kn: "ಮುಟ್ಟಿನ ಆರೋಗ್ಯ" },
+    hook: { en: "Understanding your cycle for better health", hi: "बेहतर स्वास्थ्य के लिए अपने चक्र को समझें", kn: "ಉತ್ತಮ ಆರೋಗ್ಯಕ್ಕಾಗಿ ನಿಮ್ಮ ಚಕ್ರವನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಿ" },
+    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=400&fit=crop",
+    intro: {
+      en: "Menstruation is a natural part of reproductive health. Understanding your cycle helps you track your health and identify any concerns early.",
+      hi: "मासिक धर्म प्रजनन स्वास्थ्य का एक स्वाभाविक हिस्सा है। अपने चक्र को समझने से आप अपने स्वास्थ्य पर नज़र रख सकते हैं और किसी भी चिंता की पहचान जल्दी कर सकते हैं।",
+      kn: "ಋತುಚಕ್ರವು ಸಂತಾನೋತ್ಪತ್ತಿ ಆರೋಗ್ಯದ ನೈಸರ್ಗಿಕ ಭಾಗವಾಗಿದೆ. ನಿಮ್ಮ ಚಕ್ರವನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುವುದು ನಿಮ್ಮ ಆರೋಗ್ಯವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ."
+    },
+    keyPoints: {
+      en: ["Normal cycle is 21-35 days", "Period typically lasts 3-7 days", "Track your cycle to notice changes", "Some cramping is normal"],
+      hi: ["सामान्य चक्र 21-35 दिनों का होता है", "पीरियड आमतौर पर 3-7 दिनों तक रहता है", "परिवर्तन देखने के लिए अपने चक्र को ट्रैक करें", "कुछ ऐंठन सामान्य है"],
+      kn: ["ಸಾಮಾನ್ಯ ಚಕ್ರ 21-35 ದಿನಗಳು", "ಅವಧಿ ಸಾಮಾನ್ಯವಾಗಿ 3-7 ದಿನಗಳು", "ಬದಲಾವಣೆಗಳನ್ನು ಗಮನಿಸಲು ನಿಮ್ಮ ಚಕ್ರವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ", "ಕೆಲವು ನೋವು ಸಾಮಾನ್ಯ"]
+    },
+    warnings: {
+      en: ["Heavy bleeding (soaking pad every 1-2 hours)", "Severe pain that affects daily activities", "Irregular periods that persist", "Bleeding between periods"],
+      hi: ["भारी रक्तस्राव (हर 1-2 घंटे में पैड बदलना)", "गंभीर दर्द जो दैनिक गतिविधियों को प्रभावित करता है", "अनियमित पीरियड जो बने रहते हैं", "पीरियड के बीच रक्तस्राव"],
+      kn: ["ಅತಿಯಾದ ರಕ್ತಸ್ರಾವ (ಪ್ರತಿ 1-2 ಗಂಟೆಗಳಿಗೊಮ್ಮೆ ಪ್ಯಾಡ್ ತುಂಬುವುದು)", "ದೈನಂದಿನ ಚಟುವಟಿಕೆಗಳ ಮೇಲೆ ಪರಿಣಾಮ ಬೀರುವ ತೀವ್ರ ನೋವು", "ಮುಂದುವರಿಯುವ ಅನಿಯಮಿತ ಅವಧಿಗಳು", "ಅವಧಿಗಳ ನಡುವೆ ರಕ್ತಸ್ರಾವ"]
+    },
+    tips: {
+      en: ["Use heat packs for cramps", "Stay hydrated", "Track your cycle with an app", "Maintain good hygiene", "Eat iron-rich foods"],
+      hi: ["ऐंठन के लिए हीट पैक का उपयोग करें", "हाइड्रेटेड रहें", "ऐप से अपने चक्र को ट्रैक करें", "अच्छी स्वच्छता बनाए रखें", "आयरन युक्त खाद्य पदार्थ खाएं"],
+      kn: ["ನೋವಿಗೆ ಬಿಸಿ ಪ್ಯಾಕ್ ಬಳಸಿ", "ಹೈಡ್ರೀಕರಿಸಿ", "ಅಪ್ಲಿಕೇಶನ್‌ನೊಂದಿಗೆ ನಿಮ್ಮ ಚಕ್ರವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ", "ಉತ್ತಮ ನೈರ್ಮಲ್ಯ ಕಾಯ್ದುಕೊಳ್ಳಿ", "ಕಬ್ಬಿಣ-ಸಮೃದ್ಧ ಆಹಾರಗಳನ್ನು ತಿನ್ನಿ"]
+    }
+  },
+  hygiene: {
+    title: { en: "Personal Hygiene", hi: "व्यक्तिगत स्वच्छता", kn: "ವೈಯಕ್ತಿಕ ನೈರ್ಮಲ್ಯ" },
+    hook: { en: "Essential practices for women's wellness", hi: "महिलाओं की भलाई के लिए आवश्यक प्रथाएं", kn: "ಮಹಿಳೆಯರ ಯೋಗಕ್ಷೇಮಕ್ಕಾಗಿ ಅಗತ್ಯ ಅಭ್ಯಾಸಗಳು" },
+    image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800&h=400&fit=crop",
+    intro: {
+      en: "Proper hygiene practices are crucial for preventing infections and maintaining overall health. Small daily habits make a big difference.",
+      hi: "संक्रमण को रोकने और समग्र स्वास्थ्य बनाए रखने के लिए उचित स्वच्छता प्रथाएं महत्वपूर्ण हैं। छोटी दैनिक आदतें बड़ा अंतर लाती हैं।",
+      kn: "ಸೋಂಕುಗಳನ್ನು ತಡೆಗಟ್ಟಲು ಮತ್ತು ಒಟ್ಟಾರೆ ಆರೋಗ್ಯವನ್ನು ಕಾಪಾಡಿಕೊಳ್ಳಲು ಸರಿಯಾದ ನೈರ್ಮಲ್ಯ ಅಭ್ಯಾಸಗಳು ಮುಖ್ಯವಾಗಿವೆ."
+    },
+    keyPoints: {
+      en: ["Change pads/tampons every 4-6 hours", "Wash intimate areas with water", "Wear breathable cotton underwear", "Avoid douching"],
+      hi: ["हर 4-6 घंटे में पैड/टैम्पोन बदलें", "अंतरंग क्षेत्रों को पानी से धोएं", "सांस लेने योग्य कॉटन अंडरवियर पहनें", "डाउचिंग से बचें"],
+      kn: ["ಪ್ರತಿ 4-6 ಗಂಟೆಗಳಿಗೊಮ್ಮೆ ಪ್ಯಾಡ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ", "ಅಂತರಂಗ ಪ್ರದೇಶಗಳನ್ನು ನೀರಿನಿಂದ ತೊಳೆಯಿರಿ", "ಉಸಿರಾಡುವ ಹತ್ತಿ ಒಳಉಡುಪು ಧರಿಸಿ", "ಡೌಚಿಂಗ್ ತಪ್ಪಿಸಿ"]
+    },
+    warnings: {
+      en: ["Unusual discharge with odor", "Itching or burning sensation", "Redness or swelling", "Pain during urination"],
+      hi: ["गंध के साथ असामान्य स्राव", "खुजली या जलन", "लालिमा या सूजन", "पेशाब के दौरान दर्द"],
+      kn: ["ವಾಸನೆಯೊಂದಿಗೆ ಅಸಾಮಾನ್ಯ ಡಿಸ್ಚಾರ್ಜ್", "ತುರಿಕೆ ಅಥವಾ ಸುಡುವಿಕೆ", "ಕೆಂಪು ಅಥವಾ ಊತ", "ಮೂತ್ರ ವಿಸರ್ಜನೆ ಸಮಯದಲ್ಲಿ ನೋವು"]
+    },
+    tips: {
+      en: ["Use pH-balanced products", "Keep the area dry", "Avoid tight clothing", "Change underwear daily", "Use unscented products"],
+      hi: ["pH-संतुलित उत्पादों का उपयोग करें", "क्षेत्र को सूखा रखें", "टाइट कपड़ों से बचें", "रोजाना अंडरवियर बदलें", "बिना सुगंध वाले उत्पादों का उपयोग करें"],
+      kn: ["pH-ಸಮತೋಲಿತ ಉತ್ಪನ್ನಗಳನ್ನು ಬಳಸಿ", "ಪ್ರದೇಶವನ್ನು ಒಣಗಿಸಿ", "ಬಿಗಿ ಬಟ್ಟೆ ತಪ್ಪಿಸಿ", "ಪ್ರತಿದಿನ ಒಳಉಡುಪು ಬದಲಾಯಿಸಿ", "ಸುಗಂಧರಹಿತ ಉತ್ಪನ್ನಗಳನ್ನು ಬಳಸಿ"]
+    }
+  },
+  pcos: {
+    title: { en: "PCOS Awareness", hi: "PCOS जागरूकता", kn: "PCOS ಅರಿವು" },
+    hook: { en: "Managing hormonal health effectively", hi: "हार्मोनल स्वास्थ्य को प्रभावी ढंग से प्रबंधित करना", kn: "ಹಾರ್ಮೋನ್ ಆರೋಗ್ಯವನ್ನು ಪರಿಣಾಮಕಾರಿಯಾಗಿ ನಿರ್ವಹಿಸುವುದು" },
+    image: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=800&h=400&fit=crop",
+    intro: {
+      en: "PCOS (Polycystic Ovary Syndrome) affects many women. Early detection and lifestyle changes can help manage symptoms effectively.",
+      hi: "PCOS (पॉलीसिस्टिक ओवरी सिंड्रोम) कई महिलाओं को प्रभावित करता है। शीघ्र पता लगाना और जीवनशैली में बदलाव लक्षणों को प्रभावी ढंग से प्रबंधित करने में मदद कर सकते हैं।",
+      kn: "PCOS (ಪಾಲಿಸಿಸ್ಟಿಕ್ ಓವರಿ ಸಿಂಡ್ರೋಮ್) ಅನೇಕ ಮಹಿಳೆಯರ ಮೇಲೆ ಪರಿಣಾಮ ಬೀರುತ್ತದೆ. ಆರಂಭಿಕ ಪತ್ತೆ ಮತ್ತು ಜೀವನಶೈಲಿ ಬದಲಾವಣೆಗಳು ಲಕ್ಷಣಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತವೆ."
+    },
+    keyPoints: {
+      en: ["Affects 1 in 10 women", "Can cause irregular periods", "Weight management helps", "Treatable with proper care"],
+      hi: ["10 में से 1 महिला को प्रभावित करता है", "अनियमित पीरियड का कारण बन सकता है", "वजन प्रबंधन मदद करता है", "उचित देखभाल से इलाज योग्य"],
+      kn: ["10 ರಲ್ಲಿ 1 ಮಹಿಳೆಯ ಮೇಲೆ ಪರಿಣಾಮ", "ಅನಿಯಮಿತ ಅವಧಿಗಳಿಗೆ ಕಾರಣವಾಗಬಹುದು", "ತೂಕ ನಿರ್ವಹಣೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ", "ಸರಿಯಾದ ಆರೈಕೆಯೊಂದಿಗೆ ಚಿಕಿತ್ಸೆ ಸಾಧ್ಯ"]
+    },
+    warnings: {
+      en: ["Missed periods for months", "Excessive hair growth", "Severe acne", "Difficulty conceiving", "Rapid weight gain"],
+      hi: ["महीनों तक पीरियड मिस होना", "अत्यधिक बालों का बढ़ना", "गंभीर मुंहासे", "गर्भधारण में कठिनाई", "तेजी से वजन बढ़ना"],
+      kn: ["ತಿಂಗಳುಗಳವರೆಗೆ ಅವಧಿಗಳು ಕಾಣೆಯಾಗುವುದು", "ಅತಿಯಾದ ಕೂದಲು ಬೆಳವಣಿಗೆ", "ತೀವ್ರ ಮೊಡವೆ", "ಗರ್ಭಧಾರಣೆಯಲ್ಲಿ ತೊಂದರೆ", "ವೇಗದ ತೂಕ ಹೆಚ್ಚಳ"]
+    },
+    tips: {
+      en: ["Maintain healthy weight", "Exercise regularly", "Eat balanced diet", "Monitor symptoms", "Consult gynecologist"],
+      hi: ["स्वस्थ वजन बनाए रखें", "नियमित व्यायाम करें", "संतुलित आहार लें", "लक्षणों की निगरानी करें", "स्त्री रोग विशेषज्ञ से परामर्श लें"],
+      kn: ["ಆರೋಗ್ಯಕರ ತೂಕ ನಿರ್ವಹಿಸಿ", "ನಿಯಮಿತವಾಗಿ ವ್ಯಾಯಾಮ ಮಾಡಿ", "ಸಮತೋಲಿತ ಆಹಾರ ತೆಗೆದುಕೊಳ್ಳಿ", "ಲಕ್ಷಣಗಳನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಿ", "ಸ್ತ್ರೀರೋಗತಜ್ಞರನ್ನು ಸಂಪರ್ಕಿಸಿ"]
+    }
+  },
+  mental_health: {
+    title: { en: "Mental Wellness", hi: "मानसिक कल्याण", kn: "ಮಾನಸಿಕ ಯೋಗಕ್ಷೇಮ" },
+    hook: { en: "Caring for your mind and emotions", hi: "अपने मन और भावनाओं की देखभाल", kn: "ನಿಮ್ಮ ಮನಸ್ಸು ಮತ್ತು ಭಾವನೆಗಳ ಆರೈಕೆ" },
+    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=400&fit=crop",
+    intro: {
+      en: "Mental health is as important as physical health. Recognizing signs of stress, anxiety, or depression early can lead to better outcomes.",
+      hi: "मानसिक स्वास्थ्य शारीरिक स्वास्थ्य जितना ही महत्वपूर्ण है। तनाव, चिंता या अवसाद के संकेतों को जल्दी पहचानने से बेहतर परिणाम मिल सकते हैं।",
+      kn: "ಮಾನಸಿಕ ಆರೋಗ್ಯವು ದೈಹಿಕ ಆರೋಗ್ಯದಷ್ಟೇ ಮುಖ್ಯ. ಒತ್ತಡ, ಆತಂಕ ಅಥವಾ ಖಿನ್ನತೆಯ ಚಿಹ್ನೆಗಳನ್ನು ಮುಂಚಿತವಾಗಿ ಗುರುತಿಸುವುದು ಉತ್ತಮ ಫಲಿತಾಂಶಗಳಿಗೆ ಕಾರಣವಾಗಬಹುದು."
+    },
+    keyPoints: {
+      en: ["Stress affects physical health too", "It's okay to ask for help", "Self-care is not selfish", "Mental health is treatable"],
+      hi: ["तनाव शारीरिक स्वास्थ्य को भी प्रभावित करता है", "मदद मांगना ठीक है", "आत्म-देखभाल स्वार्थी नहीं है", "मानसिक स्वास्थ्य इलाज योग्य है"],
+      kn: ["ಒತ್ತಡವು ದೈಹಿಕ ಆರೋಗ್ಯದ ಮೇಲೂ ಪರಿಣಾಮ ಬೀರುತ್ತದೆ", "ಸಹಾಯ ಕೇಳುವುದು ಸರಿ", "ಸ್ವಯಂ-ಆರೈಕೆ ಸ್ವಾರ್ಥಿಯಲ್ಲ", "ಮಾನಸಿಕ ಆರೋಗ್ಯ ಚಿಕಿತ್ಸೆ ಸಾಧ್ಯ"]
+    },
+    warnings: {
+      en: ["Persistent sadness or hopelessness", "Loss of interest in activities", "Changes in sleep or appetite", "Thoughts of self-harm"],
+      hi: ["लगातार उदासी या निराशा", "गतिविधियों में रुचि की कमी", "नींद या भूख में बदलाव", "आत्म-हानि के विचार"],
+      kn: ["ನಿರಂತರ ದುಃಖ ಅಥವಾ ನಿರಾಶೆ", "ಚಟುವಟಿಕೆಗಳಲ್ಲಿ ಆಸಕ್ತಿ ಕಳೆದುಕೊಳ್ಳುವುದು", "ನಿದ್ರೆ ಅಥವಾ ಹಸಿವಿನಲ್ಲಿ ಬದಲಾವಣೆಗಳು", "ಸ್ವಯಂ-ಹಾನಿಯ ಆಲೋಚನೆಗಳು"]
+    },
+    tips: {
+      en: ["Practice mindfulness daily", "Talk to trusted friends", "Maintain sleep routine", "Exercise regularly", "Seek professional help when needed"],
+      hi: ["रोजाना माइंडफुलनेस अभ्यास करें", "विश्वसनीय दोस्तों से बात करें", "नींद की दिनचर्या बनाए रखें", "नियमित व्यायाम करें", "जरूरत पड़ने पर पेशेवर मदद लें"],
+      kn: ["ಪ್ರತಿದಿನ ಮೈಂಡ್‌ಫುಲ್‌ನೆಸ್ ಅಭ್ಯಾಸ ಮಾಡಿ", "ವಿಶ್ವಾಸಾರ್ಹ ಸ್ನೇಹಿತರೊಂದಿಗೆ ಮಾತನಾಡಿ", "ನಿದ್ರೆಯ ದಿನಚರಿ ಕಾಯ್ದುಕೊಳ್ಳಿ", "ನಿಯಮಿತವಾಗಿ ವ್ಯಾಯಾಮ ಮಾಡಿ", "ಅಗತ್ಯವಿದ್ದಾಗ ವೃತ್ತಿಪರ ಸಹಾಯ ಪಡೆಯಿರಿ"]
+    }
+  }
 };
 
 const LandingPage = () => {
@@ -302,6 +406,45 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Education Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white" id="education-section" data-testid="education-section">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4" data-testid="education-title">Health Education</h2>
+            <p className="text-gray-600 text-base sm:text-lg" data-testid="education-subtitle">Learn about important women's health topics</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Object.keys(EDUCATION_CONTENT).map((topic) => {
+              const content = EDUCATION_CONTENT[topic];
+              return (
+                <Card 
+                  key={topic}
+                  className="overflow-hidden border-2 border-gray-200 hover:border-black transition-all duration-300 cursor-pointer group"
+                  onClick={() => window.location.href = `/education/${topic}`}
+                  data-testid={`education-card-${topic}`}
+                >
+                  <div className="aspect-video overflow-hidden">
+                    <img 
+                      src={content.image} 
+                      alt={content.title.en}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-6 space-y-2">
+                    <h3 className="text-xl font-semibold">{content.title.en}</h3>
+                    <p className="text-sm text-gray-600">{content.hook.en}</p>
+                    <div className="pt-2 flex items-center text-sm font-medium">
+                      Learn more <ChevronRight className="h-4 w-4 ml-1" />
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* Trust Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50" data-testid="trust-section">
         <div className="max-w-6xl mx-auto">
@@ -511,12 +654,218 @@ const LandingPage = () => {
   );
 };
 
+// Education Detail Page Component
+const EducationDetail = () => {
+  const { topic } = useParams();
+  const navigate = useNavigate();
+  const [language, setLanguage] = useState("en");
+  const [showSummary, setShowSummary] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  
+  const content = EDUCATION_CONTENT[topic];
+  
+  if (!content) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <p>Topic not found</p>
+    </div>;
+  }
+
+  const langMap = { en: "English", hi: "Hindi", kn: "Kannada" };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header/Navigation */}
+      <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <button 
+            onClick={() => navigate('/')}
+            className="flex items-center text-gray-600 hover:text-black transition-colors"
+            data-testid="back-button"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back
+          </button>
+          
+          {/* Language Toggle */}
+          <div className="flex gap-2">
+            {['en', 'hi', 'kn'].map((lang) => (
+              <button
+                key={lang}
+                onClick={() => setLanguage(lang)}
+                className={`px-3 py-1 text-sm rounded-full transition-all ${
+                  language === lang
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+                data-testid={`lang-${lang}`}
+              >
+                {langMap[lang]}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Hero Image */}
+        <div className="aspect-[21/9] overflow-hidden rounded-lg mb-8">
+          <img 
+            src={content.image} 
+            alt={content.title[language]}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Title */}
+        <h1 className="text-4xl sm:text-5xl font-bold mb-6" data-testid="detail-title">
+          {content.title[language]}
+        </h1>
+
+        {/* Intro */}
+        <p className="text-lg text-gray-700 leading-relaxed mb-8" data-testid="detail-intro">
+          {content.intro[language]}
+        </p>
+
+        {/* Quick Summary Toggle */}
+        <button
+          onClick={() => setShowSummary(!showSummary)}
+          className="mb-8 px-4 py-2 border-2 border-black text-black hover:bg-black hover:text-white transition-all rounded-lg"
+          data-testid="summary-toggle"
+        >
+          {showSummary ? '− Hide' : '+ Show'} Quick Summary
+        </button>
+
+        {showSummary && (
+          <div className="mb-8 p-6 bg-gray-50 rounded-lg border-2 border-gray-200" data-testid="quick-summary">
+            <h3 className="font-semibold mb-3">Quick Summary:</h3>
+            <ul className="space-y-2">
+              {content.keyPoints[language].slice(0, 4).map((point, idx) => (
+                <li key={idx} className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Key Points */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Key Points</h2>
+          <ul className="space-y-3">
+            {content.keyPoints[language].map((point, idx) => (
+              <li key={idx} className="flex items-start">
+                <CheckCircle className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Warning Signs */}
+        <div className="mb-8 p-6 bg-yellow-50 border-2 border-yellow-200 rounded-lg" data-testid="warning-signs">
+          <div className="flex items-center mb-4">
+            <AlertTriangle className="h-6 w-6 mr-2 text-yellow-800" />
+            <h2 className="text-2xl font-semibold">Warning Signs</h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">Consult a healthcare provider if you experience:</p>
+          <ul className="space-y-2">
+            {content.warnings[language].map((warning, idx) => (
+              <li key={idx} className="flex items-start text-gray-700">
+                <span className="mr-2 text-yellow-800">⚠</span>
+                <span>{warning}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Tips & Solutions */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Tips & Solutions</h2>
+          <ul className="space-y-3">
+            {content.tips[language].map((tip, idx) => (
+              <li key={idx} className="flex items-start">
+                <span className="mr-3 text-lg">✓</span>
+                <span className="text-gray-700">{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Ask Jeevan Button */}
+        <div className="my-12 p-8 bg-gray-50 rounded-lg border-2 border-gray-200 text-center">
+          <h3 className="text-xl font-semibold mb-3">Have questions about this topic?</h3>
+          <p className="text-gray-600 mb-4">Chat with Jeevan to get personalized guidance</p>
+          <Button
+            onClick={() => setChatOpen(true)}
+            className="bg-black text-white hover:bg-gray-800 px-8 py-6 text-lg"
+            data-testid="ask-jeevan-button"
+          >
+            <MessageCircle className="mr-2 h-5 w-5" />
+            Ask Jeevan about {content.title[language]}
+          </Button>
+        </div>
+
+        {/* Related Topics */}
+        <div className="mt-12 pt-8 border-t border-gray-200">
+          <h3 className="text-xl font-semibold mb-4">Related Topics</h3>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {Object.keys(EDUCATION_CONTENT)
+              .filter(t => t !== topic)
+              .slice(0, 3)
+              .map((relatedTopic) => {
+                const related = EDUCATION_CONTENT[relatedTopic];
+                return (
+                  <button
+                    key={relatedTopic}
+                    onClick={() => navigate(`/education/${relatedTopic}`)}
+                    className="text-left p-4 border-2 border-gray-200 rounded-lg hover:border-black transition-all"
+                    data-testid={`related-${relatedTopic}`}
+                  >
+                    <h4 className="font-semibold mb-1">{related.title[language]}</h4>
+                    <p className="text-sm text-gray-600">{related.hook[language]}</p>
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      </div>
+
+      {/* Chatbot Modal - Simplified version, reuse from LandingPage if needed */}
+      <Dialog open={chatOpen} onOpenChange={setChatOpen}>
+        <DialogContent className="sm:max-w-[500px] bg-white">
+          <DialogHeader>
+            <DialogTitle>Chat with Jeevan</DialogTitle>
+          </DialogHeader>
+          <div className="p-6 text-center">
+            <MessageCircle className="h-16 w-16 mx-auto mb-4" />
+            <p className="text-gray-600 mb-4">
+              This will open the chatbot with context about {content.title[language]}.
+            </p>
+            <Button
+              onClick={() => {
+                setChatOpen(false);
+                navigate('/', { state: { openChat: true, topic: content.title[language] } });
+              }}
+              className="bg-black text-white hover:bg-gray-800"
+            >
+              Start Chat
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/education/:topic" element={<EducationDetail />} />
         </Routes>
       </BrowserRouter>
     </div>
