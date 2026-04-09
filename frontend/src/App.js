@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Brain, BookOpen, Users, Shield, CheckCircle, CreditCard, X, Send, Loader2, AlertTriangle, ChevronRight, ArrowLeft } from "lucide-react";
+import { MessageCircle, Brain, BookOpen, Users, Shield, CheckCircle, CreditCard, X, Send, Loader2, AlertTriangle, ChevronRight, ArrowLeft, Calendar, ShoppingCart, Heart } from "lucide-react";
 import axios from "axios";
+import CareNetwork from "@/components/CareNetwork";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -602,6 +603,39 @@ const LandingPage = () => {
                     </div>
                   </div>
                 )}
+                
+                {/* Get Help Now - Show after bot messages */}
+                {msg.role === 'bot' && index === messages.length - 1 && messages.length > 2 && (
+                  <div className="flex justify-start mt-4">
+                    <div className="max-w-[80%] p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                      <h4 className="text-sm font-semibold mb-2">Need Professional Help?</h4>
+                      <p className="text-xs text-gray-600 mb-3">Get expert support from our care network</p>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => window.location.href = '/care-network'}
+                          className="px-3 py-1.5 text-xs border border-black rounded-full hover:bg-black hover:text-white transition-all"
+                        >
+                          <Calendar className="inline h-3 w-3 mr-1" />
+                          Consult Doctor
+                        </button>
+                        <button
+                          onClick={() => window.location.href = '/care-network'}
+                          className="px-3 py-1.5 text-xs border border-black rounded-full hover:bg-black hover:text-white transition-all"
+                        >
+                          <ShoppingCart className="inline h-3 w-3 mr-1" />
+                          Buy Products
+                        </button>
+                        <button
+                          onClick={() => window.location.href = '/care-network'}
+                          className="px-3 py-1.5 text-xs border border-black rounded-full hover:bg-black hover:text-white transition-all"
+                        >
+                          <Heart className="inline h-3 w-3 mr-1" />
+                          Get Support
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             
@@ -818,6 +852,38 @@ const EducationDetail = () => {
           </ul>
         </div>
 
+        {/* Get Help Now Section */}
+        <div className="my-12 p-8 bg-black text-white rounded-lg">
+          <h3 className="text-2xl font-semibold mb-3">Need Professional Support?</h3>
+          <p className="text-gray-300 mb-6">Access our comprehensive care network for expert help</p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <button
+              onClick={() => navigate('/care-network')}
+              className="p-4 border-2 border-white rounded-lg hover:bg-white hover:text-black transition-all text-left"
+            >
+              <Calendar className="h-6 w-6 mb-2" />
+              <h4 className="font-semibold mb-1">Consult Doctor</h4>
+              <p className="text-sm opacity-80">Book appointments with specialists</p>
+            </button>
+            <button
+              onClick={() => navigate('/care-network')}
+              className="p-4 border-2 border-white rounded-lg hover:bg-white hover:text-black transition-all text-left"
+            >
+              <ShoppingCart className="h-6 w-6 mb-2" />
+              <h4 className="font-semibold mb-1">Buy Products</h4>
+              <p className="text-sm opacity-80">Essential health & wellness items</p>
+            </button>
+            <button
+              onClick={() => navigate('/care-network')}
+              className="p-4 border-2 border-white rounded-lg hover:bg-white hover:text-black transition-all text-left"
+            >
+              <Heart className="h-6 w-6 mb-2" />
+              <h4 className="font-semibold mb-1">Get Support</h4>
+              <p className="text-sm opacity-80">Apply for sponsored help programs</p>
+            </button>
+          </div>
+        </div>
+
         {/* Ask Jeevan Button */}
         <div className="my-12 p-8 bg-gray-50 rounded-lg border-2 border-gray-200 text-center">
           <h3 className="text-xl font-semibold mb-3">Have questions about this topic?</h3>
@@ -891,6 +957,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/education/:topic" element={<EducationDetail />} />
+          <Route path="/care-network" element={<CareNetwork />} />
         </Routes>
       </BrowserRouter>
     </div>
