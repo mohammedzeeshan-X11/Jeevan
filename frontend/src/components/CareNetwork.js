@@ -4,6 +4,10 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Calendar, Clock, User, ShoppingCart, Heart, CheckCircle, X } from "lucide-react";
+import axios from "axios";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 // Mock Data
 const DOCTORS = [
@@ -138,13 +142,29 @@ const CareNetwork = ({ onClose }) => {
     setBookingForm({ name: "", date: "", time: "" });
   };
 
-  const submitBooking = () => {
-    setConfirmation({
-      type: "booking",
-      message: `Appointment booked with ${bookingModal.name} on ${bookingForm.date} at ${bookingForm.time}`
-    });
-    setBookingModal(null);
-    setTimeout(() => setConfirmation(null), 5000);
+  const submitBooking = async () => {
+    try {
+      const response = await axios.post(`${API}/appointments`, {
+        name: bookingForm.name,
+        doctor: bookingModal.name,
+        date: bookingForm.date,
+        time: bookingForm.time
+      });
+      
+      setConfirmation({
+        type: "booking",
+        message: `Appointment booked with ${bookingModal.name} on ${bookingForm.date} at ${bookingForm.time}. ID: ${response.data.id}`
+      });
+      setBookingModal(null);
+      setTimeout(() => setConfirmation(null), 5000);
+    } catch (error) {
+      console.error("Booking error:", error);
+      setConfirmation({
+        type: "error",
+        message: "Failed to book appointment. Please try again."
+      });
+      setTimeout(() => setConfirmation(null), 5000);
+    }
   };
 
   const handleCheckout = (product) => {
@@ -165,13 +185,29 @@ const CareNetwork = ({ onClose }) => {
     setHelpForm({ issue: "", description: "" });
   };
 
-  const submitHelpRequest = () => {
-    setConfirmation({
-      type: "help",
-      message: `Application submitted for "${helpModal.title}". Status: Pending review.`
-    });
-    setHelpModal(null);
-    setTimeout(() => setConfirmation(null), 5000);
+  const submitHelpRequest = async () => {
+    try {
+      const response = await axios.post(`${API}/support-requests`, {
+        issue: helpForm.issue,
+        description: helpForm.description,
+        title: helpModal.title,
+        type: helpModal.type
+      });
+      
+      setConfirmation({
+        type: "help",
+        message: `Application submitted for "${helpModal.title}". Status: Pending review. ID: ${response.data.id}`
+      });
+      setHelpModal(null);
+      setTimeout(() => setConfirmation(null), 5000);
+    } catch (error) {
+      console.error("Help request error:", error);
+      setConfirmation({
+        type: "error",
+        message: "Failed to submit application. Please try again."
+      });
+      setTimeout(() => setConfirmation(null), 5000);
+    }
   };
 
   return (

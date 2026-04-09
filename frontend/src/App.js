@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { MessageCircle, Brain, BookOpen, Users, Shield, CheckCircle, CreditCard, X, Send, Loader2, AlertTriangle, ChevronRight, ArrowLeft, Calendar, ShoppingCart, Heart } from "lucide-react";
 import axios from "axios";
 import CareNetwork from "@/components/CareNetwork";
+import Login from "@/components/Login";
+import DoctorPortal from "@/components/DoctorPortal";
+import SponsorPortal from "@/components/SponsorPortal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -511,6 +514,7 @@ const LandingPage = () => {
                 <a href="#contact" className="text-gray-400 hover:text-white transition-colors" data-testid="footer-contact">Contact</a>
                 <a href="#privacy" className="text-gray-400 hover:text-white transition-colors" data-testid="footer-privacy">Privacy Policy</a>
                 <a href="#terms" className="text-gray-400 hover:text-white transition-colors" data-testid="footer-terms">Terms of Service</a>
+                <a href="/login" className="text-gray-400 hover:text-white transition-colors font-semibold">Login (Doctor/Sponsor)</a>
               </div>
             </div>
           </div>
@@ -958,6 +962,9 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/education/:topic" element={<EducationDetail />} />
           <Route path="/care-network" element={<CareNetwork />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/doctor-portal" element={<DoctorPortal />} />
+          <Route path="/sponsor-portal" element={<SponsorPortal />} />
         </Routes>
       </BrowserRouter>
     </div>
