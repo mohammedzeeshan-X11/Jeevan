@@ -557,6 +557,74 @@ const LandingPage = () => {
         </section>
       )}
 
+      {/* Care Network Section - Only show when logged in */}
+      {isLoggedIn && (
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50" id="care-network-section" data-testid="care-network-section">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Care Network</h2>
+              <p className="text-gray-600 text-base sm:text-lg">Connect with healthcare professionals and get the support you need</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Doctor Consultations */}
+              <Card className="p-8 border-2 border-gray-200 hover:border-black transition-all duration-300 bg-white group cursor-pointer"
+                onClick={() => navigate('/care-network')}
+              >
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <Calendar className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Doctor Consultations</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Book appointments with verified healthcare professionals for expert medical advice and treatment.
+                  </p>
+                  <div className="pt-2 flex items-center justify-center text-sm font-medium">
+                    Book Now <ChevronRight className="h-4 w-4 ml-1" />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Product Marketplace */}
+              <Card className="p-8 border-2 border-gray-200 hover:border-black transition-all duration-300 bg-white group cursor-pointer"
+                onClick={() => navigate('/care-network')}
+              >
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <ShoppingCart className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Product Marketplace</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Access essential health products, medications, and wellness items delivered to your doorstep.
+                  </p>
+                  <div className="pt-2 flex items-center justify-center text-sm font-medium">
+                    Shop Now <ChevronRight className="h-4 w-4 ml-1" />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Sponsored Help */}
+              <Card className="p-8 border-2 border-gray-200 hover:border-black transition-all duration-300 bg-white group cursor-pointer"
+                onClick={() => navigate('/care-network')}
+              >
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <Heart className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Sponsored Help</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Request financial assistance for medical treatments from our network of verified sponsors.
+                  </p>
+                  <div className="pt-2 flex items-center justify-center text-sm font-medium">
+                    Request Help <ChevronRight className="h-4 w-4 ml-1" />
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Trust Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50" data-testid="trust-section">
         <div className="max-w-6xl mx-auto">
