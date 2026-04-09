@@ -618,6 +618,30 @@ const LandingPage = () => {
 
           {/* Input Area */}
           <div className="p-4 border-t border-gray-200 bg-gray-50">
+            {/* Suggested Questions */}
+            {messages.length <= 1 && (
+              <div className="mb-3">
+                <p className="text-xs text-gray-500 mb-2">Suggested questions:</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "I have period pain",
+                    "Tell me about PCOS",
+                    "How to manage stress",
+                    "What is a healthy diet?"
+                  ].map((question, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setInputMessage(question)}
+                      className="px-3 py-1.5 text-xs border border-gray-300 rounded-full hover:border-black hover:bg-black hover:text-white transition-all duration-200"
+                      data-testid={`suggested-question-${idx}`}
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className="flex gap-2">
               <Input
                 value={inputMessage}
