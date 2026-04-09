@@ -10,6 +10,8 @@ from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+import sqlite3
+import hashlib
 
 
 ROOT_DIR = Path(__file__).parent
@@ -19,6 +21,81 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# SQLite database setup (lightweight for care network)
+DB_PATH = ROOT_DIR / 'jeevan.db'
+
+def init_db():
+    """Initialize SQLite database and create tables"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Users table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL CHECK(role IN ('user', 'doctor', 'sponsor'))
+        )
+    ''')
+    
+    # Appointments table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS appointments (
+            id TEXT PRIMARY KEY,
+            user_name TEXT NOT NULL,
+            doctor_name TEXT NOT NULL,
+            date TEXT NOT NULL,
+            time TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending', 'Confirmed'))
+        )
+    ''')
+    
+    # Support Requests table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS support_requests (
+            id TEXT PRIMARY KEY,
+            issue TEXT NOT NULL,
+            description TEXT NOT NULL,
+            title TEXT NOT NULL,
+            type TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending', 'Approved', 'Rejected'))
+        )
+    ''')
+    
+    # Create default users if not exists
+    try:
+        # Default doctor
+        cursor.execute(
+            "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+            ("Dr. Priya", "doctor@jeevan.com", hashlib.sha256("doctor123".encode()).hexdigest(), "doctor")
+        )
+        # Default sponsor
+        cursor.execute(
+            "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+            ("Sponsor Admin", "sponsor@jeevan.com", hashlib.sha256("sponsor123".encode()).hexdigest(), "sponsor")
+        )
+        # Default user
+        cursor.execute(
+            "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+            ("Test User", "user@jeevan.com", hashlib.sha256("user123".encode()).hexdigest(), "user")
+        )
+    except sqlite3.IntegrityError:
+        pass  # Users already exist
+    
+    conn.commit()
+    conn.close()
+
+# Initialize database on startup
+init_db()
+
+def get_db():
+    """Get database connection"""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -55,6 +132,51 @@ class ChatResponse(BaseModel):
     response: str
     session_id: str
     videos: List[VideoRecommendation] = []
+
+# Login Models
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class LoginResponse(BaseModel):
+    success: bool
+    user_id: Optional[int] = None
+    name: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+    message: Optional[str] = None
+
+# Care Network Models
+class AppointmentCreate(BaseModel):
+    name: str
+    doctor: str
+    date: str
+    time: str
+
+class Appointment(BaseModel):
+    id: str
+    name: str
+    doctor: str
+    date: str
+    time: str
+    status: str = "Pending"
+
+class SupportRequestCreate(BaseModel):
+    issue: str
+    description: str
+    title: str
+    type: str
+
+class SupportRequest(BaseModel):
+    id: str
+    issue: str
+    description: str
+    title: str
+    type: str
+    status: str = "Pending"
+
+class StatusUpdate(BaseModel):
+    status: str
 
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
@@ -339,6 +461,190 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ===== CARE NETWORK API ENDPOINTS =====
+
+# Login
+@api_router.post("/login", response_model=LoginResponse)
+async def login(login_req: LoginRequest):
+    """Simple login endpoint"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Hash password
+    password_hash = hashlib.sha256(login_req.password.encode()).hexdigest()
+    
+    # Check credentials
+    cursor.execute(
+        "SELECT id, name, email, role FROM users WHERE email = ? AND password = ?",
+        (login_req.email, password_hash)
+    )
+    user = cursor.fetchone()
+    conn.close()
+    
+    if user:
+        return LoginResponse(
+            success=True,
+            user_id=user[0],
+            name=user[1],
+            email=user[2],
+            role=user[3]
+        )
+    else:
+        return LoginResponse(
+            success=False,
+            message="Invalid email or password"
+        )
+
+# Appointments
+@api_router.post("/appointments", response_model=Appointment)
+async def create_appointment(appointment: AppointmentCreate):
+    """Create a new doctor appointment"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    appointment_id = str(uuid.uuid4())
+    cursor.execute(
+        "INSERT INTO appointments (id, user_name, doctor_name, date, time, status) VALUES (?, ?, ?, ?, ?, ?)",
+        (appointment_id, appointment.name, appointment.doctor, appointment.date, appointment.time, "Pending")
+    )
+    conn.commit()
+    conn.close()
+    
+    logger.info(f"Appointment created: {appointment_id}")
+    return Appointment(
+        id=appointment_id,
+        name=appointment.name,
+        doctor=appointment.doctor,
+        date=appointment.date,
+        time=appointment.time,
+        status="Pending"
+    )
+
+@api_router.get("/appointments", response_model=List[Appointment])
+async def get_appointments():
+    """Get all appointments (for doctor portal)"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, user_name, doctor_name, date, time, status FROM appointments")
+    rows = cursor.fetchall()
+    conn.close()
+    
+    appointments = [
+        Appointment(
+            id=row[0],
+            name=row[1],
+            doctor=row[2],
+            date=row[3],
+            time=row[4],
+            status=row[5]
+        )
+        for row in rows
+    ]
+    return appointments
+
+@api_router.patch("/appointments/{appointment_id}", response_model=Appointment)
+async def update_appointment_status(appointment_id: str, status_update: StatusUpdate):
+    """Update appointment status"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        "UPDATE appointments SET status = ? WHERE id = ?",
+        (status_update.status, appointment_id)
+    )
+    conn.commit()
+    
+    cursor.execute("SELECT id, user_name, doctor_name, date, time, status FROM appointments WHERE id = ?", (appointment_id,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    if row:
+        logger.info(f"Appointment {appointment_id} status updated to {status_update.status}")
+        return Appointment(
+            id=row[0],
+            name=row[1],
+            doctor=row[2],
+            date=row[3],
+            time=row[4],
+            status=row[5]
+        )
+    raise HTTPException(status_code=404, detail="Appointment not found")
+
+# Support Requests
+@api_router.post("/support-requests", response_model=SupportRequest)
+async def create_support_request(request: SupportRequestCreate):
+    """Create a new support request"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    request_id = str(uuid.uuid4())
+    cursor.execute(
+        "INSERT INTO support_requests (id, issue, description, title, type, status) VALUES (?, ?, ?, ?, ?, ?)",
+        (request_id, request.issue, request.description, request.title, request.type, "Pending")
+    )
+    conn.commit()
+    conn.close()
+    
+    logger.info(f"Support request created: {request_id}")
+    return SupportRequest(
+        id=request_id,
+        issue=request.issue,
+        description=request.description,
+        title=request.title,
+        type=request.type,
+        status="Pending"
+    )
+
+@api_router.get("/support-requests", response_model=List[SupportRequest])
+async def get_support_requests():
+    """Get all support requests (for sponsor portal)"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, issue, description, title, type, status FROM support_requests")
+    rows = cursor.fetchall()
+    conn.close()
+    
+    requests = [
+        SupportRequest(
+            id=row[0],
+            issue=row[1],
+            description=row[2],
+            title=row[3],
+            type=row[4],
+            status=row[5]
+        )
+        for row in rows
+    ]
+    return requests
+
+@api_router.patch("/support-requests/{request_id}", response_model=SupportRequest)
+async def update_support_request_status(request_id: str, status_update: StatusUpdate):
+    """Update support request status"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        "UPDATE support_requests SET status = ? WHERE id = ?",
+        (status_update.status, request_id)
+    )
+    conn.commit()
+    
+    cursor.execute("SELECT id, issue, description, title, type, status FROM support_requests WHERE id = ?", (request_id,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    if row:
+        logger.info(f"Support request {request_id} status updated to {status_update.status}")
+        return SupportRequest(
+            id=row[0],
+            issue=row[1],
+            description=row[2],
+            title=row[3],
+            type=row[4],
+            status=row[5]
+        )
+    raise HTTPException(status_code=404, detail="Support request not found")
 
 # Configure logging
 logging.basicConfig(
