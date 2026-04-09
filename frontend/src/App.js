@@ -385,11 +385,26 @@ const LandingPage = () => {
               size="lg" 
               variant="outline" 
               className="border-2 border-black text-black hover:bg-black hover:text-white px-8 py-6 text-base sm:text-lg rounded-lg transition-all duration-200 w-full sm:w-auto"
-              onClick={() => scrollToSection('education')}
+              onClick={() => {
+                if (isLoggedIn) {
+                  scrollToSection('education-section');
+                } else {
+                  navigate('/login');
+                }
+              }}
               data-testid="explore-education-button"
             >
-              <BookOpen className="mr-2 h-5 w-5" />
-              Explore Education
+              {isLoggedIn ? (
+                <>
+                  <BookOpen className="mr-2 h-5 w-5" />
+                  Explore Education
+                </>
+              ) : (
+                <>
+                  <Lock className="mr-2 h-5 w-5" />
+                  Login to Learn
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -501,54 +516,46 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Education Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white" id="education-section" data-testid="education-section">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4" data-testid="education-title">Health Education</h2>
-            <p className="text-gray-600 text-base sm:text-lg" data-testid="education-subtitle">Learn about important women's health topics</p>
-          </div>
+      {/* Education Section - Only show when logged in */}
+      {isLoggedIn && (
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white" id="education-section" data-testid="education-section">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4" data-testid="education-title">Health Education</h2>
+              <p className="text-gray-600 text-base sm:text-lg" data-testid="education-subtitle">Learn about important women's health topics</p>
+            </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Object.keys(EDUCATION_CONTENT).map((topic) => {
-              const content = EDUCATION_CONTENT[topic];
-              return (
-                <Card 
-                  key={topic}
-                  className="overflow-hidden border-2 border-gray-200 hover:border-black transition-all duration-300 cursor-pointer group"
-                  onClick={() => {
-                    if (isLoggedIn) {
-                      navigate(`/education/${topic}`);
-                    } else {
-                      navigate('/login');
-                    }
-                  }}
-                  data-testid={`education-card-${topic}`}
-                >
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={content.image} 
-                      alt={content.title.en}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-6 space-y-2">
-                    <h3 className="text-xl font-semibold">{content.title.en}</h3>
-                    <p className="text-sm text-gray-600">{content.hook.en}</p>
-                    <div className="pt-2 flex items-center text-sm font-medium">
-                      {isLoggedIn ? (
-                        <>Learn more <ChevronRight className="h-4 w-4 ml-1" /></>
-                      ) : (
-                        <><Lock className="h-4 w-4 mr-1" /> Login to view</>
-                      )}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Object.keys(EDUCATION_CONTENT).map((topic) => {
+                const content = EDUCATION_CONTENT[topic];
+                return (
+                  <Card 
+                    key={topic}
+                    className="overflow-hidden border-2 border-gray-200 hover:border-black transition-all duration-300 cursor-pointer group"
+                    onClick={() => navigate(`/education/${topic}`)}
+                    data-testid={`education-card-${topic}`}
+                  >
+                    <div className="aspect-video overflow-hidden">
+                      <img 
+                        src={content.image} 
+                        alt={content.title.en}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
-                  </div>
-                </Card>
-              );
-            })}
+                    <div className="p-6 space-y-2">
+                      <h3 className="text-xl font-semibold">{content.title.en}</h3>
+                      <p className="text-sm text-gray-600">{content.hook.en}</p>
+                      <div className="pt-2 flex items-center text-sm font-medium">
+                        Learn more <ChevronRight className="h-4 w-4 ml-1" />
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Trust Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50" data-testid="trust-section">
