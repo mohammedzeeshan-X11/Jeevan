@@ -228,13 +228,21 @@ def detect_intent_and_get_videos(message: str) -> List[VideoRecommendation]:
 # Chat endpoint for Jeevan AI chatbot
 @api_router.post("/chat", response_model=ChatResponse)
 async def chat_with_jeevan(request: ChatRequest):
-    try:
-        # Generate session ID if not provided
-        session_id = request.session_id or str(uuid.uuid4())
-        
-        # Mock intelligent responses for demo (can be replaced with real API later)
-        # This provides context-aware responses for women's health queries
-        def get_mock_response(message: str, language: str) -> str:
+    # Generate session ID if not provided
+    session_id = request.session_id or str(uuid.uuid4())
+    
+    # Default fallback response (always safe and friendly)
+    def get_fallback_response(language: str) -> str:
+        fallback_responses = {
+            "English": "I'm here to help with your health questions. Could you tell me more about what you'd like to know? I can provide guidance on nutrition, exercise, mental wellness, and general health topics.",
+            "Hindi": "मैं आपके स्वास्थ्य प्रश्नों में मदद के लिए यहां हूं। क्या आप मुझे बता सकते हैं कि आप क्या जानना चाहेंगे? मैं पोषण, व्यायाम, मानसिक कल्याण पर मार्गदर्शन प्रदान कर सकता हूं।",
+            "Kannada": "ನಿಮ್ಮ ಆರೋಗ್ಯ ಪ್ರಶ್ನೆಗಳಲ್ಲಿ ಸಹಾಯ ಮಾಡಲು ನಾನು ಇಲ್ಲಿದ್ದೇನೆ. ನೀವು ಏನು ತಿಳಿದುಕೊಳ್ಳಲು ಬಯಸುತ್ತೀರಿ? ನಾನು ಪೋಷಣೆ, ವ್ಯಾಯಾಮ, ಮಾನಸಿಕ ಯೋಗಕ್ಷೇಮದ ಬಗ್ಗೆ ಮಾರ್ಗದರ್ಶನ ನೀಡಬಲ್ಲೆ."
+        }
+        return fallback_responses.get(language, fallback_responses["English"])
+    
+    # Mock intelligent responses (context-aware fallback system)
+    def get_mock_response(message: str, language: str) -> str:
+        try:
             message_lower = message.lower()
             
             # English responses
@@ -288,11 +296,22 @@ async def chat_with_jeevan(request: ChatRequest):
             
             return "Thank you for your question. I'm here to provide general health guidance. For specific medical advice, please consult a healthcare provider."
         
-        # Get mock response
+        except Exception as e:
+            # If anything fails in mock response, use ultimate fallback
+            logger.error(f"Mock response error: {str(e)}")
+            return get_fallback_response(language)
+    
+    try:
+        # Get context-aware mock response
         bot_response = get_mock_response(request.message, request.language)
         
         # Get relevant video recommendations based on user message intent
-        video_recommendations = detect_intent_and_get_videos(request.message)
+        try:
+            video_recommendations = detect_intent_and_get_videos(request.message)
+        except Exception as video_error:
+            # If video detection fails, return empty list (don't break the chat)
+            logger.error(f"Video recommendation error: {str(video_error)}")
+            video_recommendations = []
         
         return ChatResponse(
             response=bot_response,
@@ -301,8 +320,14 @@ async def chat_with_jeevan(request: ChatRequest):
         )
         
     except Exception as e:
-        logger.error(f"Chat error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Chat service error: {str(e)}")
+        # Ultimate fallback - always return a friendly response, never show errors to user
+        logger.error(f"Chat endpoint error: {str(e)}")
+        
+        return ChatResponse(
+            response=get_fallback_response(request.language),
+            session_id=session_id,
+            videos=[]
+        )
 
 # Include the router in the main app
 app.include_router(api_router)
