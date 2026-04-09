@@ -10,6 +10,7 @@ const API = `${BACKEND_URL}/api`;
 
 const Login = () => {
   const navigate = useNavigate();
+  const [selectedRole, setSelectedRole] = useState(null); // Track selected role
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -49,12 +50,84 @@ const Login = () => {
     }
   };
 
+  // Role cards data
+  const roles = [
+    {
+      type: 'user',
+      title: 'User Login',
+      description: 'Access health resources and book appointments',
+      icon: '👤',
+      demoEmail: 'user@jeevan.com',
+      demoPassword: 'user123'
+    },
+    {
+      type: 'doctor',
+      title: 'Doctor Login',
+      description: 'Manage appointments and patient consultations',
+      icon: '⚕️',
+      demoEmail: 'doctor@jeevan.com',
+      demoPassword: 'doctor123'
+    },
+    {
+      type: 'sponsor',
+      title: 'Sponsor Login',
+      description: 'Review and manage sponsorship requests',
+      icon: '🤝',
+      demoEmail: 'sponsor@jeevan.com',
+      demoPassword: 'sponsor123'
+    }
+  ];
+
+  // Render role selection screen
+  if (!selectedRole) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-4xl">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-3">Welcome to Jeevan</h1>
+            <p className="text-gray-600 text-lg">Select your login type to continue</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {roles.map((role) => (
+              <Card
+                key={role.type}
+                onClick={() => setSelectedRole(role)}
+                className="p-6 border-2 border-gray-200 hover:border-black cursor-pointer transition-all hover:shadow-lg"
+              >
+                <div className="text-center">
+                  <div className="text-5xl mb-4">{role.icon}</div>
+                  <h2 className="text-xl font-bold mb-2">{role.title}</h2>
+                  <p className="text-sm text-gray-600 mb-4">{role.description}</p>
+                  <Button className="w-full bg-black text-white hover:bg-gray-800">
+                    Login as {role.type.charAt(0).toUpperCase() + role.type.slice(1)}
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => navigate('/')}
+              className="text-sm text-gray-600 hover:text-black"
+            >
+              ← Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render login form for selected role
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <Card className="w-full max-w-md p-8 border-2 border-gray-200">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Jeevan Login</h1>
-          <p className="text-gray-600">Sign in to access your account</p>
+          <div className="text-5xl mb-3">{selectedRole.icon}</div>
+          <h1 className="text-3xl font-bold mb-2">{selectedRole.title}</h1>
+          <p className="text-gray-600">{selectedRole.description}</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
@@ -98,20 +171,24 @@ const Login = () => {
         </form>
 
         <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm">
-          <p className="font-semibold mb-2">Demo Accounts:</p>
+          <p className="font-semibold mb-2">Demo Account:</p>
           <div className="space-y-1 text-gray-600">
-            <p>• Doctor: doctor@jeevan.com / doctor123</p>
-            <p>• Sponsor: sponsor@jeevan.com / sponsor123</p>
-            <p>• User: user@jeevan.com / user123</p>
+            <p>• Email: {selectedRole.demoEmail}</p>
+            <p>• Password: {selectedRole.demoPassword}</p>
           </div>
         </div>
 
         <div className="mt-4 text-center">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              setSelectedRole(null);
+              setEmail("");
+              setPassword("");
+              setError("");
+            }}
             className="text-sm text-gray-600 hover:text-black"
           >
-            ← Back to Home
+            ← Back to Role Selection
           </button>
         </div>
       </Card>
