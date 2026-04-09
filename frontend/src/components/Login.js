@@ -56,25 +56,19 @@ const Login = () => {
       type: 'user',
       title: 'User Login',
       description: 'Access health resources and book appointments',
-      icon: '👤',
-      demoEmail: 'user@jeevan.com',
-      demoPassword: 'user123'
+      icon: '👤'
     },
     {
       type: 'doctor',
       title: 'Doctor Login',
       description: 'Manage appointments and patient consultations',
-      icon: '⚕️',
-      demoEmail: 'doctor@jeevan.com',
-      demoPassword: 'doctor123'
+      icon: '⚕️'
     },
     {
       type: 'sponsor',
       title: 'Sponsor Login',
       description: 'Review and manage sponsorship requests',
-      icon: '🤝',
-      demoEmail: 'sponsor@jeevan.com',
-      demoPassword: 'sponsor123'
+      icon: '🤝'
     }
   ];
 
@@ -169,14 +163,6 @@ const Login = () => {
             {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
-
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm">
-          <p className="font-semibold mb-2">Demo Account:</p>
-          <div className="space-y-1 text-gray-600">
-            <p>• Email: {selectedRole.demoEmail}</p>
-            <p>• Password: {selectedRole.demoPassword}</p>
-          </div>
-        </div>
 
         <div className="mt-4 text-center">
           <button
