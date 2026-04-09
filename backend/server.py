@@ -207,118 +207,118 @@ async def get_status_checks():
     
     return status_checks
 
-# Video Recommendation Database (Mock data - replace with real YouTube videos)
+# Video Recommendation Database with real YouTube videos
 VIDEO_DATABASE = {
     "menstrual_health": [
         {
-            "video_id": "menstrual_1",
+            "video_id": "EbZhN5SdqYM",
             "title": "Understanding Your Menstrual Cycle",
             "description": "Learn about the phases of your menstrual cycle and what's normal.",
             "thumbnail": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=example1"
+            "url": "https://www.youtube.com/watch?v=EbZhN5SdqYM"
         },
         {
-            "video_id": "menstrual_2",
+            "video_id": "pX50cESy4OY",
             "title": "Managing Period Pain Naturally",
             "description": "Natural remedies and tips for reducing menstrual cramps and discomfort.",
             "thumbnail": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=example2"
+            "url": "https://www.youtube.com/watch?v=pX50cESy4OY"
         }
     ],
     "pcos": [
         {
-            "video_id": "pcos_1",
+            "video_id": "1n9j_4w-bRM",
             "title": "PCOS Explained: Symptoms and Management",
             "description": "Understanding PCOS and how to manage symptoms through lifestyle changes.",
             "thumbnail": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=pcos1"
+            "url": "https://www.youtube.com/watch?v=1n9j_4w-bRM"
         },
         {
-            "video_id": "pcos_2",
+            "video_id": "8cqxVE0HB0k",
             "title": "PCOS Diet and Nutrition Guide",
             "description": "Dietary recommendations for managing PCOS and improving hormonal balance.",
             "thumbnail": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=pcos2"
+            "url": "https://www.youtube.com/watch?v=8cqxVE0HB0k"
         }
     ],
     "nutrition": [
         {
-            "video_id": "nutrition_1",
+            "video_id": "YiBZdBAq56w",
             "title": "Balanced Diet for Women's Health",
             "description": "Essential nutrients and meal planning tips for optimal women's health.",
             "thumbnail": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=nutrition1"
+            "url": "https://www.youtube.com/watch?v=YiBZdBAq56w"
         },
         {
-            "video_id": "nutrition_2",
+            "video_id": "Sl8xUHIFO5k",
             "title": "Iron-Rich Foods for Women",
             "description": "Preventing anemia with iron-rich foods and proper nutrition.",
             "thumbnail": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=nutrition2"
+            "url": "https://www.youtube.com/watch?v=Sl8xUHIFO5k"
         }
     ],
     "mental_health": [
         {
-            "video_id": "mental_1",
+            "video_id": "inpok4MKVLM",
             "title": "Stress Management Techniques",
             "description": "Effective strategies for managing stress and improving mental well-being.",
             "thumbnail": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=mental1"
+            "url": "https://www.youtube.com/watch?v=inpok4MKVLM"
         },
         {
-            "video_id": "mental_2",
+            "video_id": "ZToicYcHIOU",
             "title": "Mindfulness and Meditation for Beginners",
             "description": "Simple mindfulness practices to reduce anxiety and improve mental health.",
             "thumbnail": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=mental2"
+            "url": "https://www.youtube.com/watch?v=ZToicYcHIOU"
         }
     ],
     "exercise": [
         {
-            "video_id": "exercise_1",
+            "video_id": "v7AYKMP6rOE",
             "title": "Yoga for Women's Health",
             "description": "Gentle yoga poses specifically beneficial for women's wellness.",
             "thumbnail": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=exercise1"
+            "url": "https://www.youtube.com/watch?v=v7AYKMP6rOE"
         },
         {
-            "video_id": "exercise_2",
+            "video_id": "UBMk30rjy0o",
             "title": "Home Workout Routine for Beginners",
             "description": "Simple exercises you can do at home to stay fit and healthy.",
             "thumbnail": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=exercise2"
+            "url": "https://www.youtube.com/watch?v=UBMk30rjy0o"
         }
     ],
     "pregnancy": [
         {
-            "video_id": "pregnancy_1",
+            "video_id": "0kV-L8ToPVU",
             "title": "Prenatal Care Essentials",
             "description": "Important prenatal health tips and what to expect during pregnancy.",
             "thumbnail": "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=pregnancy1"
+            "url": "https://www.youtube.com/watch?v=0kV-L8ToPVU"
         },
         {
-            "video_id": "pregnancy_2",
+            "video_id": "xvFZjo5PgG0",
             "title": "Nutrition During Pregnancy",
             "description": "Essential nutrients and healthy eating during pregnancy.",
             "thumbnail": "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=pregnancy2"
+            "url": "https://www.youtube.com/watch?v=xvFZjo5PgG0"
         }
     ],
     "general_wellness": [
         {
-            "video_id": "wellness_1",
+            "video_id": "t1F7EEGPQwo",
             "title": "Daily Wellness Habits for Women",
             "description": "Simple daily habits to improve overall health and well-being.",
             "thumbnail": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=wellness1"
+            "url": "https://www.youtube.com/watch?v=t1F7EEGPQwo"
         },
         {
-            "video_id": "wellness_2",
+            "video_id": "0fL-pn80s-c",
             "title": "Self-Care Routine Guide",
             "description": "Creating a sustainable self-care routine for better health.",
             "thumbnail": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=wellness2"
+            "url": "https://www.youtube.com/watch?v=0fL-pn80s-c"
         }
     ]
 }

@@ -49,15 +49,16 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 };
 
 // VideoCard Component
-const VideoCard = ({ video }) => {
+const VideoCard = ({ video, onVideoClick }) => {
   return (
     <div 
-      className="border border-gray-200 rounded-lg overflow-hidden hover:border-black transition-all duration-200 bg-white"
+      className="border border-gray-200 rounded-lg overflow-hidden hover:border-black transition-all duration-200 bg-white cursor-pointer"
       data-testid="video-card"
+      onClick={() => onVideoClick(video)}
     >
       <div className="flex gap-3 p-3">
         {/* Thumbnail */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 relative">
           <img 
             src={video.thumbnail} 
             alt={video.title}
@@ -66,6 +67,14 @@ const VideoCard = ({ video }) => {
               e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="80" viewBox="0 0 128 80"%3E%3Crect fill="%23f3f4f6" width="128" height="80"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%239ca3af"%3EVideo%3C/text%3E%3C/svg%3E';
             }}
           />
+          {/* Play icon overlay */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-10 h-10 bg-black bg-opacity-70 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+              </svg>
+            </div>
+          </div>
         </div>
         
         {/* Content */}
@@ -76,15 +85,9 @@ const VideoCard = ({ video }) => {
           <p className="text-xs text-gray-600 mb-2 line-clamp-2">
             {video.description}
           </p>
-          <a
-            href={video.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center text-xs font-medium text-black hover:underline"
-            data-testid="watch-video-button"
-          >
+          <span className="inline-flex items-center text-xs font-medium text-black hover:underline">
             Watch →
-          </a>
+          </span>
         </div>
       </div>
     </div>
@@ -202,12 +205,18 @@ const LandingPage = () => {
   const [language, setLanguage] = useState("English");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null);
+  const [videoModal, setVideoModal] = useState(null);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   
   // Check authentication
   const user = getUser();
   const isLoggedIn = isAuthenticated();
+
+  // Handle video click - open in modal
+  const handleVideoClick = (video) => {
+    setVideoModal(video);
+  };
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -780,7 +789,7 @@ const LandingPage = () => {
                   <div className="flex justify-start mt-3">
                     <div className="max-w-[80%] space-y-2">
                       {msg.videos.map((video, videoIndex) => (
-                        <VideoCard key={videoIndex} video={video} />
+                        <VideoCard key={videoIndex} video={video} onVideoClick={handleVideoClick} />
                       ))}
                     </div>
                   </div>
@@ -889,6 +898,40 @@ const LandingPage = () => {
               Jeevan provides general health guidance. Always consult a healthcare provider for medical advice.
             </p>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Video Player Modal */}
+      <Dialog open={!!videoModal} onOpenChange={() => setVideoModal(null)}>
+        <DialogContent className="sm:max-w-[800px] bg-white p-0">
+          <DialogHeader className="p-4 border-b border-gray-200">
+            <DialogTitle className="text-lg font-semibold flex items-center justify-between pr-6">
+              <span className="line-clamp-1">{videoModal?.title}</span>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {videoModal && (
+            <div className="relative">
+              {/* YouTube Embed Player */}
+              <div className="aspect-video bg-black">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${videoModal.video_id}?autoplay=1`}
+                  title={videoModal.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                ></iframe>
+              </div>
+              
+              {/* Video Description */}
+              <div className="p-4">
+                <p className="text-sm text-gray-600">{videoModal.description}</p>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
