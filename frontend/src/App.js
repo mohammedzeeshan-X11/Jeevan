@@ -261,8 +261,28 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white text-black">
+      {/* Header Navigation */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h2 className="text-2xl font-bold">Jeevan</h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline"
+                className="border-2 border-black text-black hover:bg-black hover:text-white"
+                onClick={() => window.location.href = '/login'}
+              >
+                Login
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8" data-testid="hero-section">
+      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16" data-testid="hero-section">
         <div className="max-w-5xl w-full text-center space-y-8 py-20">
           {/* Logo/Brand */}
           <div className="space-y-2" data-testid="brand-header">
