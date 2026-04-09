@@ -120,9 +120,11 @@ const SPONSORED_HELP = [
 const CareNetwork = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState("doctors");
   const [bookingModal, setBookingModal] = useState(null);
+  const [paymentModal, setPaymentModal] = useState(null);
   const [checkoutModal, setCheckoutModal] = useState(null);
   const [helpModal, setHelpModal] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
   
   // Booking form state
   const [bookingForm, setBookingForm] = useState({
@@ -140,6 +142,49 @@ const CareNetwork = ({ onClose }) => {
   const handleBooking = (doctor) => {
     setBookingModal(doctor);
     setBookingForm({ name: "", date: "", time: "" });
+  };
+
+  const openPaymentModal = () => {
+    // Close booking modal and open payment modal
+    setPaymentModal({
+      doctor: bookingModal,
+      bookingDetails: bookingForm
+    });
+    setBookingModal(null);
+  };
+
+  const handlePayment = async () => {
+    setProcessingPayment(true);
+    
+    // Simulate payment processing
+    setTimeout(async () => {
+      try {
+        // Call existing booking API after successful payment
+        const response = await axios.post(`${API}/appointments`, {
+          name: paymentModal.bookingDetails.name,
+          doctor: paymentModal.doctor.name,
+          date: paymentModal.bookingDetails.date,
+          time: paymentModal.bookingDetails.time
+        });
+        
+        setConfirmation({
+          type: "booking",
+          message: `Payment successful! Appointment booked with ${paymentModal.doctor.name} on ${paymentModal.bookingDetails.date} at ${paymentModal.bookingDetails.time}. ID: ${response.data.id}`
+        });
+        setPaymentModal(null);
+        setProcessingPayment(false);
+        setTimeout(() => setConfirmation(null), 5000);
+      } catch (error) {
+        console.error("Booking error:", error);
+        setConfirmation({
+          type: "error",
+          message: "Payment successful but booking failed. Please contact support."
+        });
+        setPaymentModal(null);
+        setProcessingPayment(false);
+        setTimeout(() => setConfirmation(null), 5000);
+      }
+    }, 2000); // 2 second delay to simulate payment processing
   };
 
   const submitBooking = async () => {
@@ -393,12 +438,94 @@ const CareNetwork = ({ onClose }) => {
                 </div>
               </div>
               <Button
-                onClick={submitBooking}
+                onClick={openPaymentModal}
                 disabled={!bookingForm.name || !bookingForm.date || !bookingForm.time}
                 className="w-full bg-black text-white hover:bg-gray-800 disabled:bg-gray-300"
               >
                 Confirm Booking
               </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Modal - Razorpay Style */}
+      <Dialog open={!!paymentModal} onOpenChange={() => !processingPayment && setPaymentModal(null)}>
+        <DialogContent className="sm:max-w-[425px] bg-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-black text-white rounded flex items-center justify-center text-xs font-bold">
+                R
+              </div>
+              Razorpay Payment
+            </DialogTitle>
+          </DialogHeader>
+          {paymentModal && (
+            <div className="space-y-6">
+              {/* Payment Summary */}
+              <div className="border-2 border-gray-200 rounded-lg p-4 space-y-3">
+                <h3 className="font-semibold text-sm text-gray-600 uppercase tracking-wide">Payment Details</h3>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-start">
+                    <span className="text-sm text-gray-600">Doctor</span>
+                    <span className="font-semibold text-right">{paymentModal.doctor.name}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-start">
+                    <span className="text-sm text-gray-600">Specialization</span>
+                    <span className="text-sm text-right">{paymentModal.doctor.specialization}</span>
+                  </div>
+                  
+                  <div className="h-px bg-gray-200 my-2"></div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Date</span>
+                    <span className="font-medium">{paymentModal.bookingDetails.date}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Time</span>
+                    <span className="font-medium">{paymentModal.bookingDetails.time}</span>
+                  </div>
+                  
+                  <div className="h-px bg-gray-200 my-2"></div>
+                  
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="font-semibold">Amount to Pay</span>
+                    <span className="text-2xl font-bold">₹500</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Button */}
+              <Button
+                onClick={handlePayment}
+                disabled={processingPayment}
+                className="w-full bg-black text-white hover:bg-gray-800 disabled:bg-gray-400 h-12 text-base font-semibold"
+              >
+                {processingPayment ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Processing Payment...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                      <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd"/>
+                    </svg>
+                    Pay with Razorpay
+                  </span>
+                )}
+              </Button>
+
+              {/* Secure Payment Note */}
+              <div className="text-center">
+                <p className="text-xs text-gray-500">
+                  🔒 Secured by Razorpay • Your payment information is safe
+                </p>
+              </div>
             </div>
           )}
         </DialogContent>
