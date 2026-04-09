@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route, useNavigate, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useParams, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Brain, BookOpen, Users, Shield, CheckCircle, CreditCard, X, Send, Loader2, AlertTriangle, ChevronRight, ArrowLeft, Calendar, ShoppingCart, Heart } from "lucide-react";
+import { MessageCircle, Brain, BookOpen, Users, Shield, CheckCircle, CreditCard, X, Send, Loader2, AlertTriangle, ChevronRight, ArrowLeft, Calendar, ShoppingCart, Heart, Lock } from "lucide-react";
 import axios from "axios";
 import CareNetwork from "@/components/CareNetwork";
 import Login from "@/components/Login";
@@ -14,6 +14,39 @@ import SponsorPortal from "@/components/SponsorPortal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Auth helper functions
+const getUser = () => {
+  const userData = localStorage.getItem('jeevan_user');
+  return userData ? JSON.parse(userData) : null;
+};
+
+const isAuthenticated = () => {
+  return getUser() !== null;
+};
+
+const hasRole = (requiredRole) => {
+  const user = getUser();
+  return user && user.role === requiredRole;
+};
+
+// Protected Route Component
+const ProtectedRoute = ({ children, requiredRole }) => {
+  const user = getUser();
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (requiredRole && user.role !== requiredRole) {
+    // Redirect to appropriate portal based on user's role
+    if (user.role === 'doctor') return <Navigate to="/doctor-portal" replace />;
+    if (user.role === 'sponsor') return <Navigate to="/sponsor-portal" replace />;
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+};
 
 // VideoCard Component
 const VideoCard = ({ video }) => {
@@ -170,6 +203,11 @@ const LandingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
+  
+  // Check authentication
+  const user = getUser();
+  const isLoggedIn = isAuthenticated();
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -269,13 +307,31 @@ const LandingPage = () => {
               <h2 className="text-2xl font-bold">Jeevan</h2>
             </div>
             <div className="flex items-center gap-4">
-              <Button 
-                variant="outline"
-                className="border-2 border-black text-black hover:bg-black hover:text-white"
-                onClick={() => window.location.href = '/login'}
-              >
-                Login
-              </Button>
+              {isLoggedIn ? (
+                <>
+                  <span className="text-sm text-gray-600">
+                    Welcome, <span className="font-semibold">{user.name}</span>
+                  </span>
+                  <Button 
+                    variant="outline"
+                    className="border-2 border-black text-black hover:bg-black hover:text-white"
+                    onClick={() => {
+                      localStorage.removeItem('jeevan_user');
+                      window.location.href = '/';
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  variant="outline"
+                  className="border-2 border-black text-black hover:bg-black hover:text-white"
+                  onClick={() => navigate('/login')}
+                >
+                  Login
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -304,11 +360,26 @@ const LandingPage = () => {
             <Button 
               size="lg" 
               className="bg-black text-white hover:bg-gray-800 px-8 py-6 text-base sm:text-lg rounded-lg transition-all duration-200 w-full sm:w-auto"
-              onClick={() => setChatOpen(true)}
+              onClick={() => {
+                if (isLoggedIn) {
+                  setChatOpen(true);
+                } else {
+                  navigate('/login');
+                }
+              }}
               data-testid="start-chat-button"
             >
-              <MessageCircle className="mr-2 h-5 w-5" />
-              Start Chat
+              {isLoggedIn ? (
+                <>
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                  Start Chat
+                </>
+              ) : (
+                <>
+                  <Lock className="mr-2 h-5 w-5" />
+                  Login to Chat
+                </>
+              )}
             </Button>
             <Button 
               size="lg" 
@@ -547,15 +618,17 @@ const LandingPage = () => {
       </footer>
 
       {/* Floating Chatbot Button */}
-      <button
-        onClick={() => setChatOpen(true)}
-        className="fixed w-14 h-14 bg-black text-white rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center z-50"
-        style={{ bottom: '20px', left: '20px' }}
-        data-testid="floating-chat-button"
-        aria-label="Open chat"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </button>
+      {isLoggedIn && (
+        <button
+          onClick={() => setChatOpen(true)}
+          className="fixed w-14 h-14 bg-black text-white rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center z-50"
+          style={{ bottom: '20px', left: '20px' }}
+          data-testid="floating-chat-button"
+          aria-label="Open chat"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </button>
+      )}
 
       {/* Chatbot Modal */}
       <Dialog open={chatOpen} onOpenChange={(open) => {
@@ -981,10 +1054,31 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/education/:topic" element={<EducationDetail />} />
-          <Route path="/care-network" element={<CareNetwork />} />
+          <Route 
+            path="/care-network" 
+            element={
+              <ProtectedRoute requiredRole="user">
+                <CareNetwork />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/login" element={<Login />} />
-          <Route path="/doctor-portal" element={<DoctorPortal />} />
-          <Route path="/sponsor-portal" element={<SponsorPortal />} />
+          <Route 
+            path="/doctor-portal" 
+            element={
+              <ProtectedRoute requiredRole="doctor">
+                <DoctorPortal />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/sponsor-portal" 
+            element={
+              <ProtectedRoute requiredRole="sponsor">
+                <SponsorPortal />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </BrowserRouter>
     </div>
