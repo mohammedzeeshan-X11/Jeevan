@@ -207,124 +207,191 @@ async def get_status_checks():
     
     return status_checks
 
-# Video Recommendation Database with real YouTube videos
+import random
+
+# Video Recommendation Database with verified YouTube videos
 VIDEO_DATABASE = {
     "menstrual_health": [
         {
-            "video_id": "EbZhN5SdqYM",
-            "title": "Understanding Your Menstrual Cycle",
-            "description": "Learn about the phases of your menstrual cycle and what's normal.",
+            "video_id": "OQEQe2M_U6k",
+            "title": "Menstrual Cycle Explained",
+            "description": "Understanding your menstrual cycle phases and hormones.",
             "thumbnail": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=EbZhN5SdqYM"
+            "url": "https://www.youtube.com/watch?v=OQEQe2M_U6k"
         },
         {
-            "video_id": "pX50cESy4OY",
-            "title": "Managing Period Pain Naturally",
-            "description": "Natural remedies and tips for reducing menstrual cramps and discomfort.",
+            "video_id": "W5ob14PoxI0",
+            "title": "Period Pain Relief Tips",
+            "description": "Natural ways to manage period pain and cramps.",
             "thumbnail": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=pX50cESy4OY"
+            "url": "https://www.youtube.com/watch?v=W5ob14PoxI0"
+        },
+        {
+            "video_id": "gdRmxEzBZxU",
+            "title": "Menstrual Health Basics",
+            "description": "Everything you need to know about periods and menstrual health.",
+            "thumbnail": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=gdRmxEzBZxU"
         }
     ],
     "pcos": [
         {
-            "video_id": "1n9j_4w-bRM",
-            "title": "PCOS Explained: Symptoms and Management",
-            "description": "Understanding PCOS and how to manage symptoms through lifestyle changes.",
+            "video_id": "nSbKjZiKfvg",
+            "title": "What is PCOS?",
+            "description": "Understanding Polycystic Ovary Syndrome symptoms and causes.",
             "thumbnail": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=1n9j_4w-bRM"
+            "url": "https://www.youtube.com/watch?v=nSbKjZiKfvg"
         },
         {
-            "video_id": "8cqxVE0HB0k",
-            "title": "PCOS Diet and Nutrition Guide",
-            "description": "Dietary recommendations for managing PCOS and improving hormonal balance.",
+            "video_id": "tgIflR_erdc",
+            "title": "PCOS Diet Guide",
+            "description": "Best foods and nutrition tips for managing PCOS naturally.",
             "thumbnail": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=8cqxVE0HB0k"
+            "url": "https://www.youtube.com/watch?v=tgIflR_erdc"
+        },
+        {
+            "video_id": "kSo4W2pKd1M",
+            "title": "PCOS Treatment Options",
+            "description": "Medical and lifestyle approaches to managing PCOS symptoms.",
+            "thumbnail": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=kSo4W2pKd1M"
         }
     ],
     "nutrition": [
         {
-            "video_id": "YiBZdBAq56w",
-            "title": "Balanced Diet for Women's Health",
-            "description": "Essential nutrients and meal planning tips for optimal women's health.",
+            "video_id": "AWogJXsgk0Y",
+            "title": "Healthy Eating for Women",
+            "description": "Essential nutrition tips and balanced diet guidelines.",
             "thumbnail": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=YiBZdBAq56w"
+            "url": "https://www.youtube.com/watch?v=AWogJXsgk0Y"
         },
         {
-            "video_id": "Sl8xUHIFO5k",
-            "title": "Iron-Rich Foods for Women",
-            "description": "Preventing anemia with iron-rich foods and proper nutrition.",
+            "video_id": "R2roVw3E7SY",
+            "title": "Iron Rich Foods",
+            "description": "Preventing anemia with proper iron intake and nutrition.",
             "thumbnail": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=Sl8xUHIFO5k"
+            "url": "https://www.youtube.com/watch?v=R2roVw3E7SY"
+        },
+        {
+            "video_id": "QTWc-JLh3Fw",
+            "title": "Meal Planning Basics",
+            "description": "Simple meal planning strategies for busy women.",
+            "thumbnail": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=QTWc-JLh3Fw"
         }
     ],
     "mental_health": [
         {
             "video_id": "inpok4MKVLM",
-            "title": "Stress Management Techniques",
-            "description": "Effective strategies for managing stress and improving mental well-being.",
+            "title": "5 Minute Stress Relief",
+            "description": "Quick and effective stress management techniques.",
             "thumbnail": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=225&fit=crop",
             "url": "https://www.youtube.com/watch?v=inpok4MKVLM"
         },
         {
             "video_id": "ZToicYcHIOU",
-            "title": "Mindfulness and Meditation for Beginners",
-            "description": "Simple mindfulness practices to reduce anxiety and improve mental health.",
+            "title": "Mindfulness Meditation",
+            "description": "Beginner-friendly meditation for anxiety and stress.",
             "thumbnail": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=225&fit=crop",
             "url": "https://www.youtube.com/watch?v=ZToicYcHIOU"
+        },
+        {
+            "video_id": "8jPQjjsBbIc",
+            "title": "Mental Health Tips",
+            "description": "Daily practices to improve mental wellness and mood.",
+            "thumbnail": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=8jPQjjsBbIc"
         }
     ],
     "exercise": [
         {
             "video_id": "v7AYKMP6rOE",
-            "title": "Yoga for Women's Health",
-            "description": "Gentle yoga poses specifically beneficial for women's wellness.",
+            "title": "Beginner Yoga Flow",
+            "description": "Gentle yoga routine perfect for beginners.",
             "thumbnail": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=225&fit=crop",
             "url": "https://www.youtube.com/watch?v=v7AYKMP6rOE"
         },
         {
             "video_id": "UBMk30rjy0o",
-            "title": "Home Workout Routine for Beginners",
-            "description": "Simple exercises you can do at home to stay fit and healthy.",
+            "title": "Home Workout Routine",
+            "description": "No-equipment exercises you can do at home.",
             "thumbnail": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=225&fit=crop",
             "url": "https://www.youtube.com/watch?v=UBMk30rjy0o"
+        },
+        {
+            "video_id": "sTANio_2E0Q",
+            "title": "Walking for Health",
+            "description": "Benefits of walking and how to get started.",
+            "thumbnail": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=sTANio_2E0Q"
         }
     ],
     "pregnancy": [
         {
-            "video_id": "0kV-L8ToPVU",
+            "video_id": "YvoanB28PF4",
             "title": "Prenatal Care Essentials",
-            "description": "Important prenatal health tips and what to expect during pregnancy.",
+            "description": "Important health tips for a healthy pregnancy.",
             "thumbnail": "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=0kV-L8ToPVU"
+            "url": "https://www.youtube.com/watch?v=YvoanB28PF4"
         },
         {
-            "video_id": "xvFZjo5PgG0",
-            "title": "Nutrition During Pregnancy",
-            "description": "Essential nutrients and healthy eating during pregnancy.",
+            "video_id": "Dna_ZqAUnZE",
+            "title": "Pregnancy Nutrition",
+            "description": "What to eat during pregnancy for you and baby's health.",
             "thumbnail": "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=xvFZjo5PgG0"
+            "url": "https://www.youtube.com/watch?v=Dna_ZqAUnZE"
+        },
+        {
+            "video_id": "nM-ySWyID9o",
+            "title": "Pregnancy Exercise Guide",
+            "description": "Safe exercises during pregnancy for each trimester.",
+            "thumbnail": "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=nM-ySWyID9o"
+        }
+    ],
+    "hygiene": [
+        {
+            "video_id": "p40Q1GzVvXc",
+            "title": "Personal Hygiene Basics",
+            "description": "Essential hygiene practices for women's health.",
+            "thumbnail": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=p40Q1GzVvXc"
+        },
+        {
+            "video_id": "TJJ7N5vVEAE",
+            "title": "Menstrual Hygiene Tips",
+            "description": "Proper period care and hygiene practices.",
+            "thumbnail": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=TJJ7N5vVEAE"
         }
     ],
     "general_wellness": [
         {
-            "video_id": "t1F7EEGPQwo",
-            "title": "Daily Wellness Habits for Women",
-            "description": "Simple daily habits to improve overall health and well-being.",
+            "video_id": "aUaInS6HIGo",
+            "title": "Daily Wellness Routine",
+            "description": "Simple habits for better health and well-being.",
             "thumbnail": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=t1F7EEGPQwo"
+            "url": "https://www.youtube.com/watch?v=aUaInS6HIGo"
         },
         {
-            "video_id": "0fL-pn80s-c",
-            "title": "Self-Care Routine Guide",
-            "description": "Creating a sustainable self-care routine for better health.",
+            "video_id": "R-h1dee2S94",
+            "title": "Self-Care Guide",
+            "description": "Creating a sustainable self-care routine.",
             "thumbnail": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=225&fit=crop",
-            "url": "https://www.youtube.com/watch?v=0fL-pn80s-c"
+            "url": "https://www.youtube.com/watch?v=R-h1dee2S94"
+        },
+        {
+            "video_id": "Z-8YT7Qfv8E",
+            "title": "Women's Health Tips",
+            "description": "Essential health tips every woman should know.",
+            "thumbnail": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=225&fit=crop",
+            "url": "https://www.youtube.com/watch?v=Z-8YT7Qfv8E"
         }
     ]
 }
 
 def detect_intent_and_get_videos(message: str) -> List[VideoRecommendation]:
-    """Detect user intent from message and return relevant video recommendations"""
+    """Detect user intent from message and return 2-3 randomized relevant video recommendations"""
     message_lower = message.lower()
     
     # Check for specific health topics
@@ -340,12 +407,23 @@ def detect_intent_and_get_videos(message: str) -> List[VideoRecommendation]:
         videos_data = VIDEO_DATABASE.get("nutrition", [])
     elif any(word in message_lower for word in ['exercise', 'workout', 'fitness', 'yoga', 'physical', 'active']):
         videos_data = VIDEO_DATABASE.get("exercise", [])
+    elif any(word in message_lower for word in ['hygiene', 'clean', 'wash', 'sanitary']):
+        videos_data = VIDEO_DATABASE.get("hygiene", [])
     else:
         # Default to general wellness
         videos_data = VIDEO_DATABASE.get("general_wellness", [])
     
-    # Convert to VideoRecommendation objects (limit to 2-3 videos)
-    return [VideoRecommendation(**video) for video in videos_data[:2]]
+    # Randomize and select 2-3 videos
+    if len(videos_data) > 3:
+        selected_videos = random.sample(videos_data, min(3, len(videos_data)))
+    else:
+        selected_videos = videos_data[:3]
+    
+    # Limit to 2-3 videos
+    num_videos = random.randint(2, min(3, len(selected_videos)))
+    
+    # Convert to VideoRecommendation objects
+    return [VideoRecommendation(**video) for video in selected_videos[:num_videos]]
 
 # Chat endpoint for Jeevan AI chatbot
 @api_router.post("/chat", response_model=ChatResponse)
