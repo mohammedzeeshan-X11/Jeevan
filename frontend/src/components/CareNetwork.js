@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Calendar, Clock, User, ShoppingCart, Heart, CheckCircle, X } from "lucide-react";
+import { Calendar, Clock, User, ShoppingCart, Heart, CheckCircle, X, ArrowLeft } from "lucide-react";
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -118,6 +119,7 @@ const SPONSORED_HELP = [
 ];
 
 const CareNetwork = ({ onClose }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("doctors");
   const [bookingModal, setBookingModal] = useState(null);
   const [paymentModal, setPaymentModal] = useState(null);
@@ -260,7 +262,16 @@ const CareNetwork = ({ onClose }) => {
       {/* Header */}
       <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Jeevan Care Network</h1>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => navigate('/')}
+              className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+              aria-label="Back to home"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-2xl font-bold">Jeevan Care Network</h1>
+          </div>
           {onClose && (
             <button 
               onClick={onClose}
