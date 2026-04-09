@@ -353,85 +353,33 @@ async def chat_with_jeevan(request: ChatRequest):
     # Generate session ID if not provided
     session_id = request.session_id or str(uuid.uuid4())
     
-    # Default fallback response (always safe and friendly)
-    def get_fallback_response(language: str) -> str:
-        fallback_responses = {
-            "English": "I'm here to help with your health questions. Could you tell me more about what you'd like to know? I can provide guidance on nutrition, exercise, mental wellness, and general health topics.",
-            "Hindi": "मैं आपके स्वास्थ्य प्रश्नों में मदद के लिए यहां हूं। क्या आप मुझे बता सकते हैं कि आप क्या जानना चाहेंगे? मैं पोषण, व्यायाम, मानसिक कल्याण पर मार्गदर्शन प्रदान कर सकता हूं।",
-            "Kannada": "ನಿಮ್ಮ ಆರೋಗ್ಯ ಪ್ರಶ್ನೆಗಳಲ್ಲಿ ಸಹಾಯ ಮಾಡಲು ನಾನು ಇಲ್ಲಿದ್ದೇನೆ. ನೀವು ಏನು ತಿಳಿದುಕೊಳ್ಳಲು ಬಯಸುತ್ತೀರಿ? ನಾನು ಪೋಷಣೆ, ವ್ಯಾಯಾಮ, ಮಾನಸಿಕ ಯೋಗಕ್ಷೇಮದ ಬಗ್ಗೆ ಮಾರ್ಗದರ್ಶನ ನೀಡಬಲ್ಲೆ."
-        }
-        return fallback_responses.get(language, fallback_responses["English"])
-    
-    # Mock intelligent responses (context-aware fallback system)
-    def get_mock_response(message: str, language: str) -> str:
-        try:
-            message_lower = message.lower()
-            
-            # English responses
-            if language == "English":
-                if any(word in message_lower for word in ['hello', 'hi', 'hey', 'greetings']):
-                    return "Hello! I'm Jeevan, your health companion. I'm here to help with general health information and guidance. What would you like to know about today?"
-                elif any(word in message_lower for word in ['healthy', 'health', 'wellness', 'fit']):
-                    return "Great question! Staying healthy involves balanced nutrition, regular exercise, adequate sleep (7-9 hours), and stress management. Stay hydrated and maintain regular health check-ups. This is general guidance - consult a healthcare provider for personalized advice."
-                elif any(word in message_lower for word in ['nutrition', 'diet', 'food', 'eat']):
-                    return "A balanced diet includes fruits, vegetables, whole grains, lean proteins, and healthy fats. Aim for variety and moderation. Stay hydrated with water. For specific dietary needs, please consult a nutritionist or healthcare provider."
-                elif any(word in message_lower for word in ['exercise', 'workout', 'fitness', 'physical activity']):
-                    return "Regular physical activity is important - aim for 150 minutes of moderate exercise weekly. This can include walking, yoga, swimming, or any activity you enjoy. Start slowly and build up. Consult your doctor before starting a new exercise routine."
-                elif any(word in message_lower for word in ['stress', 'anxiety', 'mental health', 'worried']):
-                    return "Mental health is as important as physical health. Try deep breathing, meditation, or talking to loved ones. Regular exercise and good sleep also help. If stress persists, please reach out to a mental health professional."
-                elif any(word in message_lower for word in ['pregnancy', 'pregnant', 'prenatal']):
-                    return "Pregnancy requires special care - maintain prenatal vitamins, regular check-ups, balanced nutrition, and gentle exercise. Each pregnancy is unique, so please follow your healthcare provider's guidance closely."
-                elif any(word in message_lower for word in ['period', 'menstrual', 'cycle', 'menstruation']):
-                    return "Menstrual health is important. Track your cycle, manage discomfort with heat packs or gentle exercise, and maintain good hygiene. If you experience unusual changes or severe pain, consult a healthcare provider."
-                else:
-                    return "I'm here to provide general health guidance for women. I can help with questions about nutrition, exercise, mental wellness, and general health. For specific medical concerns, always consult a healthcare provider. What would you like to know?"
-            
-            # Hindi responses
-            elif language == "Hindi":
-                if any(word in message_lower for word in ['hello', 'hi', 'hey', 'namaste', 'नमस्ते', 'हेलो']):
-                    return "नमस्ते! मैं जीवन हूं, आपकी स्वास्थ्य साथी। मैं सामान्य स्वास्थ्य जानकारी और मार्गदर्शन के लिए यहां हूं। आज आप क्या जानना चाहेंगी?"
-                elif any(word in message_lower for word in ['healthy', 'स्वस्थ', 'स्वास्थ्य', 'सेहत']):
-                    return "बहुत अच्छा सवाल! स्वस्थ रहने के लिए संतुलित पोषण, नियमित व्यायाम, पर्याप्त नींद (7-9 घंटे), और तनाव प्रबंधन जरूरी है। पानी पिएं और नियमित स्वास्थ्य जांच कराएं। व्यक्तिगत सलाह के लिए स्वास्थ्य प्रदाता से परामर्श लें।"
-                elif any(word in message_lower for word in ['पोषण', 'भोजन', 'आहार', 'खाना', 'diet']):
-                    return "संतुलित आहार में फल, सब्जियां, साबुत अनाज, प्रोटीन और स्वस्थ वसा शामिल हैं। विविधता और संयम का ध्यान रखें। पानी पिएं। विशिष्ट आहार आवश्यकताओं के लिए पोषण विशेषज्ञ से परामर्श लें।"
-                elif any(word in message_lower for word in ['व्यायाम', 'कसरत', 'exercise']):
-                    return "नियमित शारीरिक गतिविधि महत्वपूर्ण है - साप्ताहिक 150 मिनट मध्यम व्यायाम करें। इसमें चलना, योग, तैरना शामिल हो सकता है। धीरे-धीरे शुरू करें। नई व्यायाम दिनचर्या शुरू करने से पहले डॉक्टर से परामर्श लें।"
-                elif any(word in message_lower for word in ['तनाव', 'चिंता', 'मानसिक', 'stress']):
-                    return "मानसिक स्वास्थ्य उतना ही महत्वपूर्ण है। गहरी सांस लेने, ध्यान, या प्रियजनों से बात करने का प्रयास करें। यदि तनाव बना रहता है, तो मानसिक स्वास्थ्य पेशेवर से संपर्क करें।"
-                else:
-                    return "मैं महिलाओं के स्वास्थ्य के लिए सामान्य मार्गदर्शन प्रदान करती हूं। मैं पोषण, व्यायाम, मानसिक स्वास्थ्य के बारे में मदद कर सकती हूं। विशिष्ट चिकित्सा चिंताओं के लिए स्वास्थ्य प्रदाता से परामर्श लें। आप क्या जानना चाहेंगी?"
-            
-            # Kannada responses
-            elif language == "Kannada":
-                if any(word in message_lower for word in ['hello', 'hi', 'hey', 'namaste', 'ನಮಸ್ಕಾರ']):
-                    return "ನಮಸ್ಕಾರ! ನಾನು ಜೀವನ್, ನಿಮ್ಮ ಆರೋಗ್ಯ ಸಹಚರ. ನಾನು ಸಾಮಾನ್ಯ ಆರೋಗ್ಯ ಮಾಹಿತಿ ಮತ್ತು ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಇಲ್ಲಿದ್ದೇನೆ. ಇಂದು ನೀವು ಏನು ತಿಳಿದುಕೊಳ್ಳಲು ಬಯಸುತ್ತೀರಿ?"
-                elif any(word in message_lower for word in ['healthy', 'ಆರೋಗ್ಯ', 'ಆರೋಗ್ಯವಂತ']):
-                    return "ಉತ್ತಮ ಪ್ರಶ್ನೆ! ಆರೋಗ್ಯವಾಗಿರಲು ಸಮತೋಲಿತ ಪೋಷಣೆ, ನಿಯಮಿತ ವ್ಯಾಯಾಮ, ಸಾಕಷ್ಟು ನಿದ್ರೆ (7-9 ಗಂಟೆಗಳು), ಮತ್ತು ಒತ್ತಡ ನಿರ್ವಹಣೆ ಅಗತ್ಯ. ನೀರು ಕುಡಿಯಿರಿ ಮತ್ತು ನಿಯಮಿತ ಆರೋಗ್ಯ ಪರೀಕ್ಷೆಗಳನ್ನು ಮಾಡಿಸಿ. ವೈಯಕ್ತಿಕ ಸಲಹೆಗಾಗಿ ಆರೋಗ್ಯ ಪೂರೈಕೆದಾರರನ್ನು ಸಂಪರ್ಕಿಸಿ."
-                elif any(word in message_lower for word in ['ಪೋಷಣೆ', 'ಆಹಾರ', 'ತಿನಿಸು', 'diet']):
-                    return "ಸಮತೋಲಿತ ಆಹಾರದಲ್ಲಿ ಹಣ್ಣುಗಳು, ತರಕಾರಿಗಳು, ಧಾನ್ಯಗಳು, ಪ್ರೋಟೀನ್ ಮತ್ತು ಆರೋಗ್ಯಕರ ಕೊಬ್ಬುಗಳು ಸೇರಿವೆ. ವೈವಿಧ್ಯತೆ ಮತ್ತು ಮಿತತ್ವವನ್ನು ಗುರಿಯಾಗಿರಿಸಿ. ನೀರು ಕುಡಿಯಿರಿ. ನಿರ್ದಿಷ್ಟ ಆಹಾರ ಅವಶ್ಯಕತೆಗಳಿಗಾಗಿ ಪೋಷಣೆ ತಜ್ಞರನ್ನು ಸಂಪರ್ಕಿಸಿ."
-                elif any(word in message_lower for word in ['ವ್ಯಾಯಾಮ', 'exercise']):
-                    return "ನಿಯಮಿತ ದೈಹಿಕ ಚಟುವಟಿಕೆ ಮುಖ್ಯ - ವಾರಕ್ಕೆ 150 ನಿಮಿಷಗಳ ಮಧ್ಯಮ ವ್ಯಾಯಾಮ ಮಾಡಿ. ಇದು ನಡೆಯುವುದು, ಯೋಗ, ಈಜು ಸೇರಿರಬಹುದು. ನಿಧಾನವಾಗಿ ಪ್ರಾರಂಭಿಸಿ. ಹೊಸ ವ್ಯಾಯಾಮ ದಿನಚರಿ ಪ್ರಾರಂಭಿಸುವ ಮೊದಲು ವೈದ್ಯರನ್ನು ಸಂಪರ್ಕಿಸಿ."
-                elif any(word in message_lower for word in ['ಒತ್ತಡ', 'ಆತಂಕ', 'stress']):
-                    return "ಮಾನಸಿಕ ಆರೋಗ್ಯ ಎಷ್ಟೇ ಮುಖ್ಯ. ಆಳವಾದ ಉಸಿರಾಟ, ಧ್ಯಾನ, ಅಥವಾ ಪ್ರೀತಿಪಾತ್ರರೊಂದಿಗೆ ಮಾತನಾಡಲು ಪ್ರಯತ್ನಿಸಿ. ಒತ್ತಡ ಮುಂದುವರಿದರೆ, ಮಾನಸಿಕ ಆರೋಗ್ಯ ವೃತ್ತಿಪರರನ್ನು ಸಂಪರ್ಕಿಸಿ."
-                else:
-                    return "ನಾನು ಮಹಿಳೆಯರ ಆರೋಗ್ಯಕ್ಕಾಗಿ ಸಾಮಾನ್ಯ ಮಾರ್ಗದರ್ಶನವನ್ನು ಒದಗಿಸುತ್ತೇನೆ. ನಾನು ಪೋಷಣೆ, ವ್ಯಾಯಾಮ, ಮಾನಸಿಕ ಆರೋಗ್ಯದ ಬಗ್ಗೆ ಸಹಾಯ ಮಾಡಬಹುದು. ನಿರ್ದಿಷ್ಟ ವೈದ್ಯಕೀಯ ಕಾಳಜಿಗಳಿಗಾಗಿ ಆರೋಗ್ಯ ಪೂರೈಕೆದಾರರನ್ನು ಸಂಪರ್ಕಿಸಿ. ನೀವು ಏನು ತಿಳಿದುಕೊಳ್ಳಲು ಬಯಸುತ್ತೀರಿ?"
-            
-            return "Thank you for your question. I'm here to provide general health guidance. For specific medical advice, please consult a healthcare provider."
-        
-        except Exception as e:
-            # If anything fails in mock response, use ultimate fallback
-            logger.error(f"Mock response error: {str(e)}")
-            return get_fallback_response(language)
-    
     try:
-        # Get context-aware mock response
-        bot_response = get_mock_response(request.message, request.language)
+        # System message for Jeevan AI (multilingual health companion for women)
+        system_messages = {
+            "English": "You are Jeevan, an AI health companion for women. Provide short, friendly, and helpful responses about general health, nutrition, exercise, mental wellness, and women's health topics. Keep responses conversational (2-3 sentences). Always remind users to consult healthcare providers for specific medical advice.",
+            "Hindi": "आप जीवन हैं, महिलाओं के लिए AI स्वास्थ्य साथी। सामान्य स्वास्थ्य, पोषण, व्यायाम, मानसिक स्वास्थ्य और महिलाओं के स्वास्थ्य विषयों पर संक्षिप्त, मित्रवत और सहायक प्रतिक्रियाएं प्रदान करें। प्रतिक्रियाएं संवादात्मक रखें (2-3 वाक्य)। उपयोगकर्ताओं को विशिष्ट चिकित्सा सलाह के लिए स्वास्थ्य प्रदाता से परामर्श लेने की याद दिलाएं।",
+            "Kannada": "ನೀವು ಜೀವನ್, ಮಹಿಳೆಯರಿಗೆ AI ಆರೋಗ್ಯ ಸಹಚರ. ಸಾಮಾನ್ಯ ಆರೋಗ್ಯ, ಪೋಷಣೆ, ವ್ಯಾಯಾಮ, ಮಾನಸಿಕ ಆರೋಗ್ಯ ಮತ್ತು ಮಹಿಳೆಯರ ಆರೋಗ್ಯ ವಿಷಯಗಳ ಬಗ್ಗೆ ಸಂಕ್ಷಿಪ್ತ, ಸ್ನೇಹಪರ ಮತ್ತು ಸಹಾಯಕ ಪ್ರತಿಕ್ರಿಯೆಗಳನ್ನು ನೀಡಿ. ಪ್ರತಿಕ್ರಿಯೆಗಳನ್ನು ಸಂವಾದಾತ್ಮಕವಾಗಿ ಇರಿಸಿ (2-3 ವಾಕ್ಯಗಳು). ನಿರ್ದಿಷ್ಟ ವೈದ್ಯಕೀಯ ಸಲಹೆಗಾಗಿ ಆರೋಗ್ಯ ಪೂರೈಕೆದಾರರನ್ನು ಸಂಪರ್ಕಿಸಲು ಬಳಕೆದಾರರಿಗೆ ನೆನಪಿಸಿ."
+        }
+        
+        system_message = system_messages.get(request.language, system_messages["English"])
+        
+        # Initialize AI chat
+        chat = LlmChat(
+            api_key=os.environ.get('EMERGENT_LLM_KEY'),
+            session_id=session_id,
+            system_message=system_message
+        ).with_model("gemini", "gemini-2.5-flash")
+        
+        # Create user message
+        user_message = UserMessage(text=request.message)
+        
+        # Get AI response
+        bot_response = await chat.send_message(user_message)
         
         # Get relevant video recommendations based on user message intent
         try:
             video_recommendations = detect_intent_and_get_videos(request.message)
         except Exception as video_error:
-            # If video detection fails, return empty list (don't break the chat)
             logger.error(f"Video recommendation error: {str(video_error)}")
             video_recommendations = []
         
@@ -442,11 +390,17 @@ async def chat_with_jeevan(request: ChatRequest):
         )
         
     except Exception as e:
-        # Ultimate fallback - always return a friendly response, never show errors to user
+        # Fallback response in case of any error
         logger.error(f"Chat endpoint error: {str(e)}")
         
+        fallback_responses = {
+            "English": "I'm here to help with your health questions. Could you tell me more about what you'd like to know?",
+            "Hindi": "मैं आपके स्वास्थ्य प्रश्नों में मदद के लिए यहां हूं। आप क्या जानना चाहेंगे?",
+            "Kannada": "ನಿಮ್ಮ ಆರೋಗ್ಯ ಪ್ರಶ್ನೆಗಳಲ್ಲಿ ಸಹಾಯ ಮಾಡಲು ನಾನು ಇಲ್ಲಿದ್ದೇನೆ. ನೀವು ಏನು ತಿಳಿದುಕೊಳ್ಳಲು ಬಯಸುತ್ತೀರಿ?"
+        }
+        
         return ChatResponse(
-            response=get_fallback_response(request.language),
+            response=fallback_responses.get(request.language, fallback_responses["English"]),
             session_id=session_id,
             videos=[]
         )
