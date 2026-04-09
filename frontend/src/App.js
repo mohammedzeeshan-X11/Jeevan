@@ -516,7 +516,13 @@ const LandingPage = () => {
                 <Card 
                   key={topic}
                   className="overflow-hidden border-2 border-gray-200 hover:border-black transition-all duration-300 cursor-pointer group"
-                  onClick={() => window.location.href = `/education/${topic}`}
+                  onClick={() => {
+                    if (isLoggedIn) {
+                      navigate(`/education/${topic}`);
+                    } else {
+                      navigate('/login');
+                    }
+                  }}
                   data-testid={`education-card-${topic}`}
                 >
                   <div className="aspect-video overflow-hidden">
@@ -530,7 +536,11 @@ const LandingPage = () => {
                     <h3 className="text-xl font-semibold">{content.title.en}</h3>
                     <p className="text-sm text-gray-600">{content.hook.en}</p>
                     <div className="pt-2 flex items-center text-sm font-medium">
-                      Learn more <ChevronRight className="h-4 w-4 ml-1" />
+                      {isLoggedIn ? (
+                        <>Learn more <ChevronRight className="h-4 w-4 ml-1" /></>
+                      ) : (
+                        <><Lock className="h-4 w-4 mr-1" /> Login to view</>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -1053,7 +1063,14 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/education/:topic" element={<EducationDetail />} />
+          <Route 
+            path="/education/:topic" 
+            element={
+              <ProtectedRoute>
+                <EducationDetail />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="/care-network" 
             element={
