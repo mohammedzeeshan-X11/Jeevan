@@ -525,7 +525,7 @@ const LandingPage = () => {
       <button
         onClick={() => setChatOpen(true)}
         className="fixed w-14 h-14 bg-black text-white rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center z-50"
-        style={{ bottom: '20px', right: '20px' }}
+        style={{ bottom: '20px', left: '20px' }}
         data-testid="floating-chat-button"
         aria-label="Open chat"
       >
